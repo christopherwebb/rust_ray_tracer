@@ -1,0 +1,7 @@
+[package]
+name = "rust_ray_tracing"
+version = "0.1.0"
+authors = ["Christopher Webb <christopher.webb@gmail.com>"]
+edition = "2018"
+
+[dependencies]
