@@ -68,6 +68,18 @@ impl Sub for Vec3 {
     }
 }
 
+impl Sub<&Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, _rhs: &Vec3) -> Vec3 {
+        Vec3 { e: [
+            self.e[0] - _rhs.e[0],
+            self.e[1] - _rhs.e[1],
+            self.e[2] - _rhs.e[2],
+        ]}
+    }
+}
+
 impl SubAssign for Vec3 {
     fn sub_assign(&mut self, _rhs: Vec3) {
         *self = Vec3 { e: [
@@ -178,7 +190,7 @@ impl DivAssign<f32> for Vec3 {
     }
 }
 
-fn dot(l: Vec3, r: Vec3) -> f32 {
+fn dot(l: &Vec3, r: &Vec3) -> f32 {
     l.e[0] * r.e[0] + l.e[1] * r.e[1] + l.e[2] * r.e[2]
 }
 
@@ -206,7 +218,21 @@ impl Ray {
     fn point_at_parameter(self, point : f32) -> Vec3 { self.a + point * self.b }
 }
 
+fn hit_sphere(centre: &Vec3, radius: f32, ray: &Ray) -> bool {
+    let oc : Vec3 = ray.origin() - centre;
+
+    let a : f32 = dot(&ray.direction(), &ray.direction());
+    let b : f32 = 2.0 * dot(&oc, &ray.direction());
+    let c : f32 = dot(&oc, &oc) - radius * radius;
+
+    let discriminant : f32 = b * b - 4.0 * a * c;
+    discriminant > 0.0
+}
+
 fn colour(r : &Ray) -> Vec3 {
+    if hit_sphere(&Vec3 { e: [0.0, 0.0, -1.0]}, 0.5, r) {
+        return Vec3 { e: [1.0, 0.0, 0.0]}
+    }
     let dir : Vec3 = r.direction();
     let unit_dir : Vec3 = unit_vector(dir);
     let t : f32 = 0.5 * (unit_dir.y() + 1.0);
@@ -232,11 +258,6 @@ fn main() {
                 a: origin.clone(),
                 b: lower_left_corner.clone() + u * horizontal.clone() + v * vertical.clone()
             };
-            // let col : Vec3 = Vec3 { e: [
-            //     x_coord as f32 / nX as f32,
-            //     y_coord as f32 / nY as f32,
-            //     0.2
-            // ]};
 
             let col: Vec3 = colour(&ray);
 
