@@ -201,9 +201,16 @@ struct Ray {
 }
 
 impl Ray {
-    fn origin(self) -> Vec3 { self.a }
-    fn direction(self) -> Vec3 { self.b }
+    fn origin(&self) -> Vec3 { self.a.clone() }
+    fn direction(&self) -> Vec3 { self.b.clone() }
     fn point_at_parameter(self, point : f32) -> Vec3 { self.a + point * self.b }
+}
+
+fn colour(r : &Ray) -> Vec3 {
+    let dir : Vec3 = r.direction();
+    let unit_dir : Vec3 = unit_vector(dir);
+    let t : f32 = 0.5 * (unit_dir.y() + 1.0);
+    (1.0 - t) * Vec3 { e: [1.0, 1.0, 1.0]} + t * Vec3 { e: [0.5, 0.7, 1.0]}
 }
 
 fn main() {
@@ -216,13 +223,22 @@ fn main() {
     let origin : Vec3 = Vec3 { e: [0.0, 0.0, 0.0]};
 
     println!("P3\n{} {}\n255", nX, nY);
-    for yCoord in (0..nY).rev() {
-        for xCoord in 0..nX {
-            let col : Vec3 = Vec3 { e: [
-                xCoord as f32 / nX as f32,
-                yCoord as f32 / nY as f32,
-                0.2
-            ]};
+    for y_coord in (0..nY).rev() {
+        for x_coord in 0..nX {
+            let u: f32 = x_coord as f32 / nX as f32;
+            let v: f32 = y_coord as f32 / nY as f32;
+
+            let ray : Ray = Ray {
+                a: origin.clone(),
+                b: lower_left_corner.clone() + u * horizontal.clone() + v * vertical.clone()
+            };
+            // let col : Vec3 = Vec3 { e: [
+            //     x_coord as f32 / nX as f32,
+            //     y_coord as f32 / nY as f32,
+            //     0.2
+            // ]};
+
+            let col: Vec3 = colour(&ray);
 
             let ir = (255.99 * col.r()) as u64;
             let ig = (255.99 * col.g()) as u64;
