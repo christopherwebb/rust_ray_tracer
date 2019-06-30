@@ -362,18 +362,35 @@ fn hit_sphere(centre: &Vec3, radius: f32, ray: &Ray) -> f32 {
     return (-b - discriminant.sqrt()) / (2.0 * a);
 }
 
-fn colour(r : &Ray) -> Vec3 {
-    let sphere_vec : f32 = hit_sphere(&Vec3 { e: [0.0, 0.0, -1.0]}, 0.5, r);
-    if sphere_vec > 0.0 {
-        let normal : Vec3 = unit_vector(r.point_at_parameter(sphere_vec)) - Vec3{ e: [0.0, 0.0, -1.0]};
-        return 0.5 * Vec3 { e: [
-            normal.x() + 1.0,
-            normal.y() + 1.0,
-            normal.z() + 1.0,
-        ]};
+fn colour(ray : &Ray, world: &Hitable) -> Vec3 {
+    let mut hit_rec : HitRecord = HitRecord {
+            t: 10000.0,
+            p: Vec3 { e: [0.0, 0.0, 0.0]},
+            normal: Vec3 { e: [0.0, 0.0, 0.0]},
+        };
+
+    if world.hit(ray, 0.0, 10000.0, &mut hit_rec) {
+        // let normal : Vec3 = unit_vector(ray.point_at_parameter(sphere_vec))
+        //     + Vec3{ e: [1.0, 1.0, 1.0]};
+        // return 0.5 * Vec3 { e: [
+        //     normal.x() + 1.0,
+        //     normal.y() + 1.0,
+        //     normal.z() + 1.0,
+        // ]};
+        return 0.5 * (hit_rec.normal + Vec3 { e: [1.0, 1.0, 1.0]});
     }
 
-    let dir : Vec3 = r.direction();
+    // let sphere_vec : f32 = hit_sphere(&Vec3 { e: [0.0, 0.0, -1.0]}, 0.5, r);
+    // if sphere_vec > 0.0 {
+    //     let normal : Vec3 = unit_vector(r.point_at_parameter(sphere_vec)) - Vec3{ e: [0.0, 0.0, -1.0]};
+    //     return 0.5 * Vec3 { e: [
+    //         normal.x() + 1.0,
+    //         normal.y() + 1.0,
+    //         normal.z() + 1.0,
+    //     ]};
+    // }
+
+    let dir : Vec3 = ray.direction();
     let unit_dir : Vec3 = unit_vector(dir);
     let t : f32 = 0.5 * (unit_dir.y() + 1.0);
     (1.0 - t) * Vec3 { e: [1.0, 1.0, 1.0]} + t * Vec3 { e: [0.5, 0.7, 1.0]}
@@ -388,6 +405,19 @@ fn main() {
     let vertical : Vec3 = Vec3 { e: [0.0, 2.0, 0.0]};
     let origin : Vec3 = Vec3 { e: [0.0, 0.0, 0.0]};
 
+    let world : HitList = HitList {
+        list: vec![
+            Sphere {
+                centre: Vec3 { e: [0.0, 0.0, -1.0]}, 
+                radius: 0.5,
+            },
+            Sphere {
+                centre: Vec3 { e: [0.0, -100.5, -1.0]}, 
+                radius: 100.0,
+            },
+        ]
+    };
+
     println!("P3\n{} {}\n255", nX, nY);
     for y_coord in (0..nY).rev() {
         for x_coord in 0..nX {
@@ -399,7 +429,7 @@ fn main() {
                 b: lower_left_corner.clone() + u * horizontal.clone() + v * vertical.clone()
             };
 
-            let col: Vec3 = colour(&ray);
+            let col: Vec3 = colour(&ray, &world);
 
             let ir = (255.99 * col.r()) as u64;
             let ig = (255.99 * col.g()) as u64;
