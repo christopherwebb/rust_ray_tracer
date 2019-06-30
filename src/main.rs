@@ -46,6 +46,18 @@ impl Add for Vec3 {
     }
 }
 
+impl Add<&Vec3> for &Vec3 {
+    type Output = Vec3;
+
+    fn add(self, _rhs: &Vec3) -> Vec3 {
+        Vec3 { e: [
+            self.e[0] + _rhs.e[0],
+            self.e[1] + _rhs.e[1],
+            self.e[2] + _rhs.e[2],
+        ]}
+    }
+}
+
 impl AddAssign for Vec3 {
     fn add_assign(&mut self, _rhs: Vec3) {
         *self = Vec3 { e: [
@@ -114,10 +126,34 @@ impl Mul<f32> for Vec3 {
     }
 }
 
+impl Mul<f32> for &Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, _rhs: f32) -> Vec3 {
+        Vec3 { e: [
+            self.e[0] * _rhs,
+            self.e[1] * _rhs,
+            self.e[2] * _rhs,
+        ]}
+    }
+}
+
 impl Mul<Vec3> for f32 {
     type Output = Vec3;
 
     fn mul(self, _rhs: Vec3) -> Vec3 {
+        Vec3 { e: [
+            self * _rhs.e[0],
+            self * _rhs.e[1],
+            self * _rhs.e[2],
+        ]}
+    }
+}
+
+impl Mul<&Vec3> for f32 {
+    type Output = Vec3;
+
+    fn mul(self, _rhs: &Vec3) -> Vec3 {
         Vec3 { e: [
             self * _rhs.e[0],
             self * _rhs.e[1],
@@ -215,10 +251,10 @@ struct Ray {
 impl Ray {
     fn origin(&self) -> Vec3 { self.a.clone() }
     fn direction(&self) -> Vec3 { self.b.clone() }
-    fn point_at_parameter(self, point : f32) -> Vec3 { self.a + point * self.b }
+    fn point_at_parameter(&self, point : f32) -> Vec3 { &self.a + &(point * &self.b) }
 }
 
-fn hit_sphere(centre: &Vec3, radius: f32, ray: &Ray) -> bool {
+fn hit_sphere(centre: &Vec3, radius: f32, ray: &Ray) -> f32 {
     let oc : Vec3 = ray.origin() - centre;
 
     let a : f32 = dot(&ray.direction(), &ray.direction());
@@ -226,13 +262,24 @@ fn hit_sphere(centre: &Vec3, radius: f32, ray: &Ray) -> bool {
     let c : f32 = dot(&oc, &oc) - radius * radius;
 
     let discriminant : f32 = b * b - 4.0 * a * c;
-    discriminant > 0.0
+
+    if discriminant < 0.0 {
+        return -1.0;
+    }
+    return (-b - discriminant.sqrt()) / (2.0 * a);
 }
 
 fn colour(r : &Ray) -> Vec3 {
-    if hit_sphere(&Vec3 { e: [0.0, 0.0, -1.0]}, 0.5, r) {
-        return Vec3 { e: [1.0, 0.0, 0.0]}
+    let sphere_vec : f32 = hit_sphere(&Vec3 { e: [0.0, 0.0, -1.0]}, 0.5, r);
+    if sphere_vec > 0.0 {
+        let normal : Vec3 = unit_vector(r.point_at_parameter(sphere_vec)) - Vec3{ e: [0.0, 0.0, -1.0]};
+        return 0.5 * Vec3 { e: [
+            normal.x() + 1.0,
+            normal.y() + 1.0,
+            normal.z() + 1.0,
+        ]};
     }
+
     let dir : Vec3 = r.direction();
     let unit_dir : Vec3 = unit_vector(dir);
     let t : f32 = 0.5 * (unit_dir.y() + 1.0);
