@@ -92,6 +92,18 @@ impl Sub<&Vec3> for Vec3 {
     }
 }
 
+impl Sub<&Vec3> for &Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, _rhs: &Vec3) -> Vec3 {
+        Vec3 { e: [
+            self.e[0] - _rhs.e[0],
+            self.e[1] - _rhs.e[1],
+            self.e[2] - _rhs.e[2],
+        ]}
+    }
+}
+
 impl SubAssign for Vec3 {
     fn sub_assign(&mut self, _rhs: Vec3) {
         *self = Vec3 { e: [
@@ -252,6 +264,87 @@ impl Ray {
     fn origin(&self) -> Vec3 { self.a.clone() }
     fn direction(&self) -> Vec3 { self.b.clone() }
     fn point_at_parameter(&self, point : f32) -> Vec3 { &self.a + &(point * &self.b) }
+}
+
+#[derive(Clone)]
+struct HitRecord {
+    t : f32,
+    p : Vec3,
+    normal : Vec3,
+}
+
+struct Sphere {
+    centre : Vec3,
+    radius: f32
+}
+
+trait Hitable {
+    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool;
+}
+
+impl Hitable for Sphere {
+    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
+        let oc : Vec3 = ray.origin() - &self.centre;
+
+        let a : f32 = dot(&ray.direction(), &ray.direction());
+        let b : f32 = dot(&oc, &ray.direction());
+        let c : f32 = dot(&oc, &oc) - self.radius * self.radius;
+
+        let discriminant : f32 = b * b - a * c;
+
+        if discriminant <= 0.0 {
+            return false;
+        }
+
+        let temp : f32 = (-b - (b * b - a * c).sqrt()) / a;
+        if temp > t_min && temp < t_max {
+            rec.t = temp;
+            rec.p = ray.point_at_parameter(rec.t);
+            rec.normal = (&rec.p - &self.centre) / self.radius;
+            return true;
+        }
+
+        let temp2 : f32 = (-b + (b * b - a * c).sqrt()) / a;
+        if temp2 > t_min && temp2 < t_max {
+            rec.t = temp2;
+            rec.p = ray.point_at_parameter(rec.t);
+            rec.normal = (&rec.p - &self.centre) / self.radius;
+            return true;
+        }
+
+        false
+    }
+}
+
+struct HitList {
+    list : Vec<Sphere>,
+}
+
+impl Hitable for HitList {
+    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
+        let mut hit_rec : HitRecord = HitRecord {
+            t: t_max,
+            p: Vec3 { e: [0.0, 0.0, 0.0]},
+            normal: Vec3 { e: [0.0, 0.0, 0.0]},
+        };
+        // let mut hit_rec_ref : &mut HitRecord = &mut hit_rec;
+        let mut hit_anything : bool = false;
+        let mut closest_so_far : f32 = t_max;
+
+        for hit_item in self.list.iter() {
+            // if hit_item.hit(ray, t_min, closest_so_far, hit_rec_ref) {
+            if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
+                hit_anything = true;
+                closest_so_far = hit_rec.t;
+                // rec = &mut hit_rec.clone();
+                rec.t = hit_rec.t;
+                rec.p = hit_rec.p.clone();
+                rec.normal = hit_rec.normal.clone();
+            }
+        }
+
+        hit_anything
+    }
 }
 
 fn hit_sphere(centre: &Vec3, radius: f32, ray: &Ray) -> f32 {
