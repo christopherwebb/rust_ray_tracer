@@ -1,4 +1,6 @@
 use std::io::{self, Write};
+use rand::thread_rng;
+use rand::Rng;
 
 mod vector;
 use crate::vector::{Vec3, dot, cross, unit_vector};
@@ -118,25 +120,8 @@ fn colour(ray : &Ray, world: &Hitable) -> Vec3 {
         };
 
     if world.hit(ray, 0.0, 10000.0, &mut hit_rec) {
-        // let normal : Vec3 = unit_vector(ray.point_at_parameter(sphere_vec))
-        //     + Vec3{ e: [1.0, 1.0, 1.0]};
-        // return 0.5 * Vec3 { e: [
-        //     normal.x() + 1.0,
-        //     normal.y() + 1.0,
-        //     normal.z() + 1.0,
-        // ]};
         return 0.5 * (hit_rec.normal + Vec3 { e: [1.0, 1.0, 1.0]});
     }
-
-    // let sphere_vec : f32 = hit_sphere(&Vec3 { e: [0.0, 0.0, -1.0]}, 0.5, r);
-    // if sphere_vec > 0.0 {
-    //     let normal : Vec3 = unit_vector(r.point_at_parameter(sphere_vec)) - Vec3{ e: [0.0, 0.0, -1.0]};
-    //     return 0.5 * Vec3 { e: [
-    //         normal.x() + 1.0,
-    //         normal.y() + 1.0,
-    //         normal.z() + 1.0,
-    //     ]};
-    // }
 
     let dir : Vec3 = ray.direction();
     let unit_dir : Vec3 = unit_vector(dir);
@@ -145,8 +130,10 @@ fn colour(ray : &Ray, world: &Hitable) -> Vec3 {
 }
 
 fn main() {
-    let nX = 800;
-    let nY = 400;
+    let nX = 200;
+    let nY = 100;
+
+    let mut rng = thread_rng();
 
     let lower_left_corner : Vec3 = Vec3 { e: [-2.0, -1.0, -1.0]};
     let horizontal : Vec3 = Vec3 { e: [4.0, 0.0, 0.0]};
@@ -166,18 +153,29 @@ fn main() {
         ]
     };
 
+    let aa_samples : u16 = 100;
+    let aa_division : f32 = f32::from(aa_samples);
+
     println!("P3\n{} {}\n255", nX, nY);
     for y_coord in (0..nY).rev() {
         for x_coord in 0..nX {
-            let u: f32 = x_coord as f32 / nX as f32;
-            let v: f32 = y_coord as f32 / nY as f32;
+            let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
+            for aa_iter in 0..aa_samples {
+                let rand_x : f32 = rng.gen::<f64>() as f32;
+                let rand_y : f32 = rng.gen::<f64>() as f32;
 
-            let ray : Ray = Ray {
-                a: origin.clone(),
-                b: lower_left_corner.clone() + u * horizontal.clone() + v * vertical.clone()
-            };
+                let u: f32 = (rand_x + x_coord as f32) / nX as f32;
+                let v: f32 = (rand_y + y_coord as f32) / nY as f32;
 
-            let col: Vec3 = colour(&ray, &world);
+                let ray : Ray = Ray {
+                    a: origin.clone(),
+                    b: lower_left_corner.clone() + u * horizontal.clone() + v * vertical.clone()
+                };
+
+                // let col: Vec3 = colour(&ray, &world);
+                col_sum += colour(&ray, &world);
+            }
+            let col : Vec3 = col_sum / aa_division;
 
             let ir = (255.99 * col.r()) as u64;
             let ig = (255.99 * col.g()) as u64;
