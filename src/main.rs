@@ -1,9 +1,19 @@
 use std::io::{self, Write};
+use std::thread;
 use rand::thread_rng;
 use rand::Rng;
+use num_cpus;
 
 mod vector;
-use crate::vector::{Vec3, dot, cross, unit_vector};
+use crate::vector::{
+    Vec3,
+    dot,
+    cross,
+    unit_vector,
+    rnd_in_unit_sphere,
+    reflect,
+    refract,
+};
 
 struct Ray {
     a : Vec3,
@@ -21,15 +31,206 @@ struct HitRecord {
     t : f32,
     p : Vec3,
     normal : Vec3,
+    material: Material,
 }
 
-struct Sphere {
-    centre : Vec3,
-    radius: f32
+// trait Material {
+//     fn scatter(ray_in: &Ray, hit: &HitRecordy) -> MaterialHit;
+// }
+
+struct MaterialHit {
+    hit : bool,
+    atten: Vec3,
+    ray_out: Ray,
+    // material : Material,
 }
+
+#[derive(Clone, Copy)]
+enum MaterialType {
+    lambertian,
+    metal,
+    dielectric,
+}
+
+#[derive(Clone, Copy)]
+struct Material {
+    mat_type : MaterialType,
+    albedo : Vec3,
+    fuzz : f32,
+    ref_idx : f32,
+}
+
+impl Material {
+    fn scatter(self, ray_in: &Ray, hit: &HitRecord) -> MaterialHit {
+        match self.mat_type {
+            MaterialType::lambertian => {
+                let target : Vec3 = hit.p + hit.normal + rnd_in_unit_sphere();
+
+                MaterialHit {
+                    hit : true,
+                    atten : self.albedo,
+                    ray_out : Ray {
+                        a: hit.p,
+                        b: target - hit.p,
+                    },
+                }
+            },
+            MaterialType::metal => {
+                let reflected : Vec3 = reflect(&unit_vector(&ray_in.direction()), &hit.normal);
+                let scattered : Ray = Ray {
+                    a: hit.p,
+                    b: &reflected + &(self.fuzz * rnd_in_unit_sphere()),
+                };
+                
+                MaterialHit {
+                    hit : dot(&scattered.direction(), &hit.normal) > 0.0,
+                    atten : self.albedo,
+                    ray_out : scattered,
+                }
+            },
+            MaterialType::dielectric => {
+                // let outward_normal  : Vec3;
+                let reflected : Vec3 = reflect(&ray_in.direction(), &hit.normal);
+
+                // let ni_over_nt : f32;
+
+                let atten : Vec3 = Vec3 {e: [1.0, 1.0, 1.0]};
+
+                // let refracted : Vec3;
+
+                // if dot(&ray_in.direction(), &hit.normal) > 0.0 {
+                //     outward_normal = -hit.normal;
+                //     ni_over_nt = self.ref_idx;
+                // } else {
+                //     outward_normal = hit.normal;
+                //     ni_over_nt = 1.0 / self.ref_idx;
+                // }
+
+                let dot_prod : f32 = dot(&ray_in.direction(), &hit.normal);
+                let (outward_normal, ni_over_nt, cosine) =
+                if dot_prod > 0.0 {
+                    (
+                        -hit.normal,
+                        self.ref_idx,
+                        self.ref_idx * dot_prod / &ray_in.direction().length()
+                    )
+                } else {
+                    (
+                        hit.normal,
+                        1.0 / self.ref_idx,
+                        -dot_prod / &ray_in.direction().length()
+                    )
+                };
+
+                let (refracting, refracted) = refract(&ray_in.direction(), &outward_normal, ni_over_nt);
+                if refracting {
+                    let reflect_prob = Material::schlick(cosine, self.ref_idx);
+                    let random : f32= rand::thread_rng().gen();
+
+                    let ray = if random < reflect_prob {
+                        reflected
+                    } else {
+                        refracted.unwrap()
+                    };
+
+                    MaterialHit {
+                        hit : true,
+                        atten : atten,
+                        ray_out : Ray {
+                            a: hit.p,
+                            b: ray,
+                        },
+                    }
+                } else {
+                    MaterialHit {
+                        hit : true,
+                        atten : atten,
+                        ray_out : Ray {
+                            a: hit.p,
+                            b: reflected,
+                        },
+                    }
+                }
+            },
+        }
+    }
+
+    fn schlick(cosine : f32, ref_idx : f32) -> f32 {
+        let r0 : f32 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        let r0_sqr = r0 * r0;
+
+        r0_sqr + (1.0 - r0_sqr) * (1.0 - cosine).powf(5.0)
+    }
+
+    fn make_lambertian(albedo: Vec3) -> Material {
+        Material {
+            mat_type: MaterialType::lambertian,
+            albedo: albedo,
+            fuzz: 0.0,
+            ref_idx: 0.0,
+        }
+    }
+    fn make_metal(albedo: Vec3, fuzz: f32) -> Material {
+        Material {
+            mat_type: MaterialType::metal,
+            albedo: albedo,
+            fuzz: fuzz,
+            ref_idx: 0.0,
+        }
+    }
+    fn make_dielectric(ref_idx: f32) -> Material {
+        Material {
+            mat_type: MaterialType::dielectric,
+            albedo: Vec3 {e: [0.0, 0.0, 0.0]},
+            fuzz: 0.0,
+            ref_idx: ref_idx,
+        }
+    }
+    fn make_dummy_material() -> Material {
+        Material {
+            mat_type: MaterialType::metal,
+            albedo: Vec3 {e: [0.0, 0.0, 0.0]},
+            fuzz: 0.0,
+            ref_idx: 0.0,
+        }
+    }
+}
+
+// struct Lambertian {
+//     albedo : vec3,
+// // }
+
+// // impl Material for Lambertian {
+//     fn scatter(self, ray_in: &Ray, hit: &HitRecord) -> MaterialHit {
+
+//         let target : Vec3 = hit.p + hit.normal + rnd_in_unit_sphere();
+//         // let new_ray : Ray = Ray {
+//         //             a: hit_rec.p,
+//         //             b: target - &hit_rec.p,
+//         //         };
+
+
+
+//         MaterialHit {
+//             hit : true,
+//             atten : self.albedo,
+//             ray_out : Ray {
+//                 a: hit.p,
+//                 b: target - hit.p,
+//             }
+//         }
+//     }
+// }
 
 trait Hitable {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool;
+}
+
+#[derive(Copy, Clone)]
+struct Sphere {
+    pub centre : Vec3,
+    pub radius: f32,
+    pub material: Material,
 }
 
 impl Hitable for Sphere {
@@ -51,6 +252,7 @@ impl Hitable for Sphere {
             rec.t = temp;
             rec.p = ray.point_at_parameter(rec.t);
             rec.normal = (&rec.p - &self.centre) / self.radius;
+            rec.material = self.material;
             return true;
         }
 
@@ -59,6 +261,7 @@ impl Hitable for Sphere {
             rec.t = temp2;
             rec.p = ray.point_at_parameter(rec.t);
             rec.normal = (&rec.p - &self.centre) / self.radius;
+            rec.material = self.material;
             return true;
         }
 
@@ -66,6 +269,7 @@ impl Hitable for Sphere {
     }
 }
 
+#[derive(Clone)]
 struct HitList {
     list : Vec<Sphere>,
 }
@@ -76,20 +280,19 @@ impl Hitable for HitList {
             t: t_max,
             p: Vec3 { e: [0.0, 0.0, 0.0]},
             normal: Vec3 { e: [0.0, 0.0, 0.0]},
+            material: Material::make_dummy_material(),
         };
-        // let mut hit_rec_ref : &mut HitRecord = &mut hit_rec;
         let mut hit_anything : bool = false;
         let mut closest_so_far : f32 = t_max;
 
         for hit_item in self.list.iter() {
-            // if hit_item.hit(ray, t_min, closest_so_far, hit_rec_ref) {
             if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
                 hit_anything = true;
                 closest_so_far = hit_rec.t;
-                // rec = &mut hit_rec.clone();
                 rec.t = hit_rec.t;
                 rec.p = hit_rec.p.clone();
                 rec.normal = hit_rec.normal.clone();
+                rec.material = hit_rec.material.clone();
             }
         }
 
@@ -112,26 +315,49 @@ fn hit_sphere(centre: &Vec3, radius: f32, ray: &Ray) -> f32 {
     return (-b - discriminant.sqrt()) / (2.0 * a);
 }
 
-fn colour(ray : &Ray, world: &Hitable) -> Vec3 {
+fn colour(ray : &Ray, world: &Hitable, depth : i32) -> Vec3 {
     let mut hit_rec : HitRecord = HitRecord {
             t: 10000.0,
             p: Vec3 { e: [0.0, 0.0, 0.0]},
             normal: Vec3 { e: [0.0, 0.0, 0.0]},
+            material: Material::make_dummy_material(),
         };
 
-    if world.hit(ray, 0.0, 10000.0, &mut hit_rec) {
-        return 0.5 * (hit_rec.normal + Vec3 { e: [1.0, 1.0, 1.0]});
+    if world.hit(ray, 0.001, 10000.0, &mut hit_rec) {
+        // let target : Vec3 = hit_rec.p + hit_rec.normal + rnd_in_unit_sphere();
+        // let new_ray : Ray = Ray {
+        //             a: hit_rec.p,
+        //             b: target - &hit_rec.p,
+        //         };
+        // return 0.5 * colour(
+        //     &new_ray,
+        //     world
+        // )
+
+        if depth >= 50 {
+            return Vec3 { e: [0.0, 0.0, 0.0]};
+        }
+
+        let scatter_result : MaterialHit = hit_rec.material.scatter(&ray, &hit_rec);
+        if !scatter_result.hit {
+            return Vec3 { e: [0.0, 0.0, 0.0]};
+        }
+
+        // return Vec3 { e: [1.0, 0.0, 0.0]};
+        return scatter_result.atten * colour(&scatter_result.ray_out, world, depth + 1);
     }
 
     let dir : Vec3 = ray.direction();
-    let unit_dir : Vec3 = unit_vector(dir);
+    let unit_dir : Vec3 = unit_vector(&dir);
     let t : f32 = 0.5 * (unit_dir.y() + 1.0);
     (1.0 - t) * Vec3 { e: [1.0, 1.0, 1.0]} + t * Vec3 { e: [0.5, 0.7, 1.0]}
 }
 
 fn main() {
-    let nX = 200;
-    let nY = 100;
+    let NTHREADS : u16 = num_cpus::get() as u16;
+
+    let nX = 800;
+    let nY = 400;
 
     let mut rng = thread_rng();
 
@@ -145,10 +371,34 @@ fn main() {
             Sphere {
                 centre: Vec3 { e: [0.0, 0.0, -1.0]}, 
                 radius: 0.5,
+                material: Material::make_lambertian(
+                    Vec3 { e: [0.8, 0.3, 0.3]},
+                )
             },
             Sphere {
                 centre: Vec3 { e: [0.0, -100.5, -1.0]}, 
                 radius: 100.0,
+                material: Material::make_lambertian(
+                    Vec3 { e: [0.8, 0.8, 0.0]},
+                )
+            },
+            Sphere {
+                centre: Vec3 { e: [1.0, 0.0, -1.0]}, 
+                radius: 0.5,
+                material: Material::make_metal(
+                    Vec3 { e: [0.8, 0.6, 0.2]},
+                    1.0,
+                )
+            },
+            Sphere {
+                centre: Vec3 { e: [-1.0, 0.0, -1.0]}, 
+                radius: 0.5,
+                material: Material::make_dielectric(1.5)
+            },
+            Sphere {
+                centre: Vec3 { e: [-1.0, 0.0, -1.0]}, 
+                radius: -0.45,
+                material: Material::make_dielectric(1.5)
             },
         ]
     };
@@ -172,8 +422,7 @@ fn main() {
                     b: lower_left_corner.clone() + u * horizontal.clone() + v * vertical.clone()
                 };
 
-                // let col: Vec3 = colour(&ray, &world);
-                col_sum += colour(&ray, &world);
+                col_sum += colour(&ray, &world, 0);
             }
             let col : Vec3 = col_sum / aa_division;
 

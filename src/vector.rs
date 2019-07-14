@@ -1,6 +1,7 @@
 use std::ops::{
     Add,
     AddAssign,
+    Neg,
     Sub,
     SubAssign,
     Mul,
@@ -8,9 +9,13 @@ use std::ops::{
     Div,
     DivAssign
 };
+use std::option;
 use std::clone::Clone;
+use std::marker::Copy;
+use rand::thread_rng;
+use rand::Rng;
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct Vec3 {
     pub e : [f32; 3],
 }
@@ -23,11 +28,11 @@ impl Vec3 {
     pub fn g(&self) -> f32 { return self.e[1]; }
     pub fn b(&self) -> f32 { return self.e[2]; }
 
-    fn length(&self) -> f32 {
+    pub fn length(&self) -> f32 {
         (self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]).sqrt()
     }
 
-    fn squared_length(&self) -> f32 {
+    pub fn squared_length(&self) -> f32 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
     }
 }
@@ -63,6 +68,18 @@ impl AddAssign for Vec3 {
             self.e[1] + _rhs.e[1],
             self.e[2] + _rhs.e[2],
         ]};
+    }
+}
+
+impl Neg for Vec3 {
+    type Output = Vec3;
+
+    fn neg(self) -> Vec3 {
+        Vec3 { e: [
+            -self.e[0],
+            -self.e[1],
+            -self.e[2],
+        ]}
     }
 }
 
@@ -248,7 +265,42 @@ pub fn cross(l: Vec3, r: Vec3) -> Vec3 {
     ]}
 }
 
-pub fn unit_vector(vec : Vec3) -> Vec3 {
+pub fn unit_vector(vec : &Vec3) -> Vec3 {
     let length = vec.length();
     vec.clone() / length
+}
+
+pub fn rnd_in_unit_sphere() -> Vec3 {
+    let mut rng = thread_rng();
+
+    let mut x : Vec3 = Vec3 {e: [4.0, 4.0, 4.0]};
+
+    while {
+        x = 2.0 * Vec3{
+            e: [
+                rng.gen::<f64>() as f32,
+                rng.gen::<f64>() as f32,
+                rng.gen::<f64>() as f32
+            ]
+        } - Vec3{ e: [1.0, 1.0, 1.0]};
+        x.squared_length() >= 1.0
+    } {}
+
+    return x;      
+}
+
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    v - &(2.0 * dot(v, n) * n)
+}
+
+pub fn refract(v : &Vec3, n : &Vec3, ni_over_nt : f32) -> (bool, Option<Vec3>) {
+    let uv : Vec3 = unit_vector(v);
+    let dt : f32 = dot(&uv, n);
+    let discriminant : f32 = 1.0 - ni_over_nt * ni_over_nt * (1.0 - dt * dt);
+
+    if discriminant > 0.0 {
+        (true, Some(ni_over_nt * (uv - n * dt) - n * discriminant.sqrt()))
+    } else {
+        (false, None)
+    }
 }
