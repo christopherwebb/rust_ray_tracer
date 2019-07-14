@@ -257,7 +257,7 @@ pub fn dot(l: &Vec3, r: &Vec3) -> f32 {
     l.e[0] * r.e[0] + l.e[1] * r.e[1] + l.e[2] * r.e[2]
 }
 
-pub fn cross(l: Vec3, r: Vec3) -> Vec3 {
+pub fn cross(l: &Vec3, r: &Vec3) -> Vec3 {
     Vec3 { e: [
         l.e[1] * r.e[2] - l.e[2] * r.e[1],
         l.e[0] * r.e[2] - l.e[2] * r.e[0],

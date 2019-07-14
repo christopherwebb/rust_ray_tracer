@@ -1,5 +1,6 @@
 use std::io::{self, Write};
 use std::thread;
+use std::f32;
 use rand::thread_rng;
 use rand::Rng;
 use num_cpus;
@@ -315,6 +316,58 @@ fn hit_sphere(centre: &Vec3, radius: f32, ray: &Ray) -> f32 {
     return (-b - discriminant.sqrt()) / (2.0 * a);
 }
 
+#[derive(Clone, Copy)]
+struct Camera {
+    origin : Vec3,
+    lower_left_corner : Vec3,
+    horizontal : Vec3,
+    vertical : Vec3,
+}
+
+impl Camera {
+    fn Create(
+        look_from : Vec3,
+        look_at : Vec3,
+        up : Vec3,
+        fvov : f32,
+        aspect : f32
+    ) -> Camera {
+        let u : Vec3;
+        let v : Vec3;
+        let w : Vec3;
+
+        let theta = fvov * f32::consts::PI / 180.0;
+        let half_height = (theta / 2.0).tan();
+        let half_width = aspect * half_height;
+
+        w = unit_vector(&(&look_from - &look_at));
+        u = unit_vector(&cross(&up, &w));
+        v = cross(&w, &u);
+
+        let half_width_u = half_width * &u;
+        let half_height_v = half_height * &v;
+
+        Camera {
+            // lower_left_corner: Vec3 {e:[-half_width, -half_height, -1.0]},
+            lower_left_corner: &look_from - &half_width_u - &half_height_v - w,
+            origin: look_from,
+            horizontal: 2.0 * half_width_u,
+            vertical: 2.0 * half_height_v,
+        }
+    }
+    // fn GetRay(self, u: f32, v: f32) -> Ray {
+    //     Ray {
+    //         a: self.origin.clone(),
+    //         b: &self.lower_left_corner + &(u * &self.horizontal) + v * &self.vertical
+    //     }
+    fn GetRay(self, s: f32, t: f32) -> Ray {
+        Ray {
+            a: self.origin.clone(),
+            b: &self.lower_left_corner + &(s * &self.horizontal) + t * &self.vertical - &self.origin
+        }
+    }
+}
+
 fn colour(ray : &Ray, world: &Hitable, depth : i32) -> Vec3 {
     let mut hit_rec : HitRecord = HitRecord {
             t: 10000.0,
@@ -366,6 +419,15 @@ fn main() {
     let vertical : Vec3 = Vec3 { e: [0.0, 2.0, 0.0]};
     let origin : Vec3 = Vec3 { e: [0.0, 0.0, 0.0]};
 
+    let cam = Camera::Create(
+        Vec3 { e: [-2.0, 2.0,  1.0]},
+        Vec3 { e: [ 0.0, 0.0, -1.0]},
+        Vec3 { e: [ 0.0, 1.0,  0.0]},
+        90.0,
+        (nX as f32) / (nY as f32)
+    );
+
+    let sphere_radius: f32 = (f32::consts::PI / 4.0).cos();
     let world : HitList = HitList {
         list: vec![
             Sphere {
@@ -401,6 +463,22 @@ fn main() {
                 material: Material::make_dielectric(1.5)
             },
         ]
+        // list: vec![
+        //     Sphere {
+        //         centre: Vec3 { e: [-sphere_radius, 0.0, -1.0]}, 
+        //         radius: sphere_radius,
+        //         material: Material::make_lambertian(
+        //             Vec3 { e: [0.0, 0.0, 1.0]},
+        //         )
+        //     },
+        //     Sphere {
+        //         centre: Vec3 { e: [sphere_radius, 0.0, -1.0]}, 
+        //         radius: sphere_radius,
+        //         material: Material::make_lambertian(
+        //             Vec3 { e: [1.0, 0.0, 0.0]},
+        //         )
+        //     },
+        // ]
     };
 
     let aa_samples : u16 = 100;
@@ -417,10 +495,7 @@ fn main() {
                 let u: f32 = (rand_x + x_coord as f32) / nX as f32;
                 let v: f32 = (rand_y + y_coord as f32) / nY as f32;
 
-                let ray : Ray = Ray {
-                    a: origin.clone(),
-                    b: lower_left_corner.clone() + u * horizontal.clone() + v * vertical.clone()
-                };
+                let ray = &cam.GetRay(u, v);
 
                 col_sum += colour(&ray, &world, 0);
             }
