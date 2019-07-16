@@ -15,7 +15,7 @@ use std::marker::Copy;
 use rand::thread_rng;
 use rand::Rng;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Vec3 {
     pub e : [f32; 3],
 }
@@ -260,7 +260,7 @@ pub fn dot(l: &Vec3, r: &Vec3) -> f32 {
 pub fn cross(l: &Vec3, r: &Vec3) -> Vec3 {
     Vec3 { e: [
         l.e[1] * r.e[2] - l.e[2] * r.e[1],
-        l.e[0] * r.e[2] - l.e[2] * r.e[0],
+        l.e[2] * r.e[0] - l.e[0] * r.e[2],
         l.e[0] * r.e[1] - l.e[1] * r.e[0],
     ]}
 }
@@ -280,13 +280,30 @@ pub fn rnd_in_unit_sphere() -> Vec3 {
             e: [
                 rng.gen::<f64>() as f32,
                 rng.gen::<f64>() as f32,
-                rng.gen::<f64>() as f32
+                rng.gen::<f64>() as f32,
             ]
         } - Vec3{ e: [1.0, 1.0, 1.0]};
         x.squared_length() >= 1.0
     } {}
 
     return x;      
+}
+
+pub fn rnd_in_unit_disc() -> Vec3 {
+    let mut rng = thread_rng();
+    let sub = Vec3 { e: [1.0, 1.0, 0.0]};
+    loop {
+
+        let p = 2.0 * Vec3 { e: [
+            rng.gen::<f64>() as f32,
+            rng.gen::<f64>() as f32,
+            0.0,
+        ]} - &sub;
+
+        if dot(&p, &p) < 1.0 {
+            return p
+        }
+    }
 }
 
 pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {

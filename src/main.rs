@@ -322,6 +322,10 @@ struct Camera {
     lower_left_corner : Vec3,
     horizontal : Vec3,
     vertical : Vec3,
+    // u: Vec3,
+    // v: Vec3,
+    // w: Vec3,
+    // lens_radius: f32,
 }
 
 impl Camera {
@@ -330,11 +334,14 @@ impl Camera {
         look_at : Vec3,
         up : Vec3,
         fvov : f32,
-        aspect : f32
+        aspect : f32,
+        // aperature: f32,
+        // focus_dist: f32,
     ) -> Camera {
         let u : Vec3;
         let v : Vec3;
         let w : Vec3;
+        // let lens_radius = aperature / 2.0;
 
         let theta = fvov * f32::consts::PI / 180.0;
         let half_height = (theta / 2.0).tan();
@@ -348,18 +355,16 @@ impl Camera {
         let half_height_v = half_height * &v;
 
         Camera {
-            // lower_left_corner: Vec3 {e:[-half_width, -half_height, -1.0]},
             lower_left_corner: &look_from - &half_width_u - &half_height_v - w,
             origin: look_from,
             horizontal: 2.0 * half_width_u,
             vertical: 2.0 * half_height_v,
+            // u: ,
+            // v: ,
+            // w: ,
+            // lens_radius
         }
     }
-    // fn GetRay(self, u: f32, v: f32) -> Ray {
-    //     Ray {
-    //         a: self.origin.clone(),
-    //         b: &self.lower_left_corner + &(u * &self.horizontal) + v * &self.vertical
-    //     }
     fn GetRay(self, s: f32, t: f32) -> Ray {
         Ray {
             a: self.origin.clone(),
@@ -377,16 +382,6 @@ fn colour(ray : &Ray, world: &Hitable, depth : i32) -> Vec3 {
         };
 
     if world.hit(ray, 0.001, 10000.0, &mut hit_rec) {
-        // let target : Vec3 = hit_rec.p + hit_rec.normal + rnd_in_unit_sphere();
-        // let new_ray : Ray = Ray {
-        //             a: hit_rec.p,
-        //             b: target - &hit_rec.p,
-        //         };
-        // return 0.5 * colour(
-        //     &new_ray,
-        //     world
-        // )
-
         if depth >= 50 {
             return Vec3 { e: [0.0, 0.0, 0.0]};
         }
@@ -396,7 +391,6 @@ fn colour(ray : &Ray, world: &Hitable, depth : i32) -> Vec3 {
             return Vec3 { e: [0.0, 0.0, 0.0]};
         }
 
-        // return Vec3 { e: [1.0, 0.0, 0.0]};
         return scatter_result.atten * colour(&scatter_result.ray_out, world, depth + 1);
     }
 
@@ -412,20 +406,25 @@ fn main() {
     let nX = 800;
     let nY = 400;
 
-    let mut rng = thread_rng();
+    let aa_samples : u16 = 100;
 
-    let lower_left_corner : Vec3 = Vec3 { e: [-2.0, -1.0, -1.0]};
-    let horizontal : Vec3 = Vec3 { e: [4.0, 0.0, 0.0]};
-    let vertical : Vec3 = Vec3 { e: [0.0, 2.0, 0.0]};
-    let origin : Vec3 = Vec3 { e: [0.0, 0.0, 0.0]};
+    let mut rng = thread_rng();
 
     let cam = Camera::Create(
         Vec3 { e: [-2.0, 2.0,  1.0]},
         Vec3 { e: [ 0.0, 0.0, -1.0]},
         Vec3 { e: [ 0.0, 1.0,  0.0]},
-        90.0,
+        45.0,
         (nX as f32) / (nY as f32)
     );
+
+    // let cam = Camera::Create(
+    //     Vec3 { e: [ 0.0, 0.0,  0.0]},
+    //     Vec3 { e: [ 0.0, 0.0, -1.0]},
+    //     Vec3 { e: [ 0.0, 1.0,  0.0]},
+    //     90.0,
+    //     (nX as f32) / (nY as f32)
+    // );
 
     let sphere_radius: f32 = (f32::consts::PI / 4.0).cos();
     let world : HitList = HitList {
@@ -434,7 +433,7 @@ fn main() {
                 centre: Vec3 { e: [0.0, 0.0, -1.0]}, 
                 radius: 0.5,
                 material: Material::make_lambertian(
-                    Vec3 { e: [0.8, 0.3, 0.3]},
+                    Vec3 { e: [0.1, 0.2, 0.5]},
                 )
             },
             Sphere {
@@ -481,7 +480,6 @@ fn main() {
         // ]
     };
 
-    let aa_samples : u16 = 100;
     let aa_division : f32 = f32::from(aa_samples);
 
     println!("P3\n{} {}\n255", nX, nY);
