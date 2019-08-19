@@ -1,8 +1,9 @@
-use std::io::{self, Write};
-use std::thread;
+// use std::io::{self, Write};
+// use std::thread;
 use std::f32;
 use rand::thread_rng;
 use rand::Rng;
+use rand::rngs::ThreadRng;
 use num_cpus;
 
 mod vector;
@@ -12,6 +13,7 @@ use crate::vector::{
     cross,
     unit_vector,
     rnd_in_unit_sphere,
+    rnd_in_unit_disc,
     reflect,
     refract,
 };
@@ -48,9 +50,9 @@ struct MaterialHit {
 
 #[derive(Clone, Copy)]
 enum MaterialType {
-    lambertian,
-    metal,
-    dielectric,
+    Lambertian,
+    Metal,
+    Dielectric,
 }
 
 #[derive(Clone, Copy)]
@@ -64,7 +66,7 @@ struct Material {
 impl Material {
     fn scatter(self, ray_in: &Ray, hit: &HitRecord) -> MaterialHit {
         match self.mat_type {
-            MaterialType::lambertian => {
+            MaterialType::Lambertian => {
                 let target : Vec3 = hit.p + hit.normal + rnd_in_unit_sphere();
 
                 MaterialHit {
@@ -76,20 +78,20 @@ impl Material {
                     },
                 }
             },
-            MaterialType::metal => {
+            MaterialType::Metal => {
                 let reflected : Vec3 = reflect(&unit_vector(&ray_in.direction()), &hit.normal);
                 let scattered : Ray = Ray {
                     a: hit.p,
                     b: &reflected + &(self.fuzz * rnd_in_unit_sphere()),
                 };
-                
+
                 MaterialHit {
                     hit : dot(&scattered.direction(), &hit.normal) > 0.0,
                     atten : self.albedo,
                     ray_out : scattered,
                 }
             },
-            MaterialType::dielectric => {
+            MaterialType::Dielectric => {
                 // let outward_normal  : Vec3;
                 let reflected : Vec3 = reflect(&ray_in.direction(), &hit.normal);
 
@@ -165,7 +167,7 @@ impl Material {
 
     fn make_lambertian(albedo: Vec3) -> Material {
         Material {
-            mat_type: MaterialType::lambertian,
+            mat_type: MaterialType::Lambertian,
             albedo: albedo,
             fuzz: 0.0,
             ref_idx: 0.0,
@@ -173,7 +175,7 @@ impl Material {
     }
     fn make_metal(albedo: Vec3, fuzz: f32) -> Material {
         Material {
-            mat_type: MaterialType::metal,
+            mat_type: MaterialType::Metal,
             albedo: albedo,
             fuzz: fuzz,
             ref_idx: 0.0,
@@ -181,7 +183,7 @@ impl Material {
     }
     fn make_dielectric(ref_idx: f32) -> Material {
         Material {
-            mat_type: MaterialType::dielectric,
+            mat_type: MaterialType::Dielectric,
             albedo: Vec3 {e: [0.0, 0.0, 0.0]},
             fuzz: 0.0,
             ref_idx: ref_idx,
@@ -189,7 +191,7 @@ impl Material {
     }
     fn make_dummy_material() -> Material {
         Material {
-            mat_type: MaterialType::metal,
+            mat_type: MaterialType::Metal,
             albedo: Vec3 {e: [0.0, 0.0, 0.0]},
             fuzz: 0.0,
             ref_idx: 0.0,
@@ -275,6 +277,139 @@ struct HitList {
     list : Vec<Sphere>,
 }
 
+impl HitList {
+    fn three_spheres_on_world() -> HitList {
+        HitList {
+            list: vec![
+                Sphere {
+                    centre: Vec3 { e: [0.0, 0.0, -1.0]},
+                    radius: 0.5,
+                    material: Material::make_lambertian(
+                        Vec3 { e: [0.1, 0.2, 0.5]},
+                    )
+                },
+                Sphere {
+                    centre: Vec3 { e: [0.0, -100.5, -1.0]},
+                    radius: 100.0,
+                    material: Material::make_lambertian(
+                        Vec3 { e: [0.8, 0.8, 0.0]},
+                    )
+                },
+                Sphere {
+                    centre: Vec3 { e: [1.0, 0.0, -1.0]},
+                    radius: 0.5,
+                    material: Material::make_metal(
+                        Vec3 { e: [0.8, 0.6, 0.2]},
+                        1.0,
+                    )
+                },
+                Sphere {
+                    centre: Vec3 { e: [-1.0, 0.0, -1.0]},
+                    radius: 0.5,
+                    material: Material::make_dielectric(1.5)
+                },
+                Sphere {
+                    centre: Vec3 { e: [-1.0, 0.0, -1.0]},
+                    radius: -0.45,
+                    material: Material::make_dielectric(1.5)
+                },
+            ]
+        }
+    }
+    fn blue_red_spheres() -> HitList {
+        let sphere_radius: f32 = (f32::consts::PI / 4.0).cos();
+        HitList {
+            list: vec![
+                Sphere {
+                    centre: Vec3 { e: [-sphere_radius, 0.0, -1.0]},
+                    radius: sphere_radius,
+                    material: Material::make_lambertian(
+                        Vec3 { e: [0.0, 0.0, 1.0]},
+                    )
+                },
+                Sphere {
+                    centre: Vec3 { e: [sphere_radius, 0.0, -1.0]},
+                    radius: sphere_radius,
+                    material: Material::make_lambertian(
+                        Vec3 { e: [1.0, 0.0, 0.0]},
+                    )
+                },
+            ]
+        }
+    }
+    fn random_world(rng: &mut ThreadRng) -> HitList {
+        let small_radius = 0.2;
+        let large_radius = 1.0;
+        let mut sphere_list = vec![];
+
+        sphere_list.push(Sphere {
+            centre: Vec3 { e: [0.0, -1000.0, 0.0]},
+            radius: 1000.0,
+            material: Material::make_lambertian(
+                Vec3 { e: [0.5, 0.5, 0.5]},
+            )
+        });
+
+        sphere_list.push(Sphere {
+            centre: Vec3 { e: [0.0, 1.0, 0.0]},
+            radius: large_radius,
+            material: Material::make_dielectric(1.5)
+        });
+        sphere_list.push(Sphere {
+            centre: Vec3 { e: [-4.0, 1.0, 0.0]},
+            radius: large_radius,
+            material: Material::make_lambertian(
+                Vec3 { e: [0.4, 0.2, 0.1]},
+            )
+        });
+        sphere_list.push(Sphere {
+            centre: Vec3 { e: [4.0, 1.0, 0.0]},
+            radius: large_radius,
+            material: Material::make_metal(
+                Vec3 { e: [0.7, 0.6, 0.5]},
+                0.0,
+            )
+        });
+
+        let distance_filter = Vec3 { e : [4.0, 0.2, 0.0]};
+
+        for a in -11..11 {
+            for b in -11..11 {
+                let chosen_mat = rng.gen::<f64>();
+                let centre = Vec3 { e: [
+                    a as f32 + 0.9 * rng.gen::<f64>() as f32,
+                    small_radius,
+                    b as f32 + 0.9 * rng.gen::<f64>() as f32,
+                ]};
+
+                if (centre - distance_filter).length() > 0.9 {
+                    sphere_list.push(Sphere {
+                        centre: centre,
+                        radius: 0.2,
+                        material: match chosen_mat {
+                            x if x < 0.8 => Material::make_lambertian(Vec3 { e: [
+                                rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
+                                rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
+                                rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
+                            ]}),
+                            x if x < 0.95 => Material::make_metal(Vec3 { e: [
+                                0.5 * (1.0 + rng.gen::<f64>() as f32),
+                                0.5 * (1.0 + rng.gen::<f64>() as f32),
+                                0.5 * (1.0 + rng.gen::<f64>() as f32),
+                            ]}, 0.5 * rng.gen::<f64>() as f32),
+                            _ => Material::make_dielectric(1.5),
+                        },
+                    });
+                }
+            }
+        }
+
+        HitList {
+            list: sphere_list
+        }
+    }
+}
+
 impl Hitable for HitList {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let mut hit_rec : HitRecord = HitRecord {
@@ -301,47 +436,32 @@ impl Hitable for HitList {
     }
 }
 
-fn hit_sphere(centre: &Vec3, radius: f32, ray: &Ray) -> f32 {
-    let oc : Vec3 = ray.origin() - centre;
-
-    let a : f32 = dot(&ray.direction(), &ray.direction());
-    let b : f32 = 2.0 * dot(&oc, &ray.direction());
-    let c : f32 = dot(&oc, &oc) - radius * radius;
-
-    let discriminant : f32 = b * b - 4.0 * a * c;
-
-    if discriminant < 0.0 {
-        return -1.0;
-    }
-    return (-b - discriminant.sqrt()) / (2.0 * a);
-}
-
 #[derive(Clone, Copy)]
 struct Camera {
     origin : Vec3,
     lower_left_corner : Vec3,
     horizontal : Vec3,
     vertical : Vec3,
-    // u: Vec3,
-    // v: Vec3,
-    // w: Vec3,
-    // lens_radius: f32,
+    u: Vec3,
+    v: Vec3,
+    w: Vec3,
+    lens_radius: f32,
 }
 
 impl Camera {
-    fn Create(
+    fn create(
         look_from : Vec3,
         look_at : Vec3,
         up : Vec3,
         fvov : f32,
         aspect : f32,
-        // aperature: f32,
-        // focus_dist: f32,
+        aperature: f32,
+        focus_dist: f32,
     ) -> Camera {
         let u : Vec3;
         let v : Vec3;
         let w : Vec3;
-        // let lens_radius = aperature / 2.0;
+        let lens_radius = aperature / 2.0;
 
         let theta = fvov * f32::consts::PI / 180.0;
         let half_height = (theta / 2.0).tan();
@@ -351,24 +471,26 @@ impl Camera {
         u = unit_vector(&cross(&up, &w));
         v = cross(&w, &u);
 
-        let half_width_u = half_width * &u;
-        let half_height_v = half_height * &v;
+        let half_width_u = half_width * &u * focus_dist;
+        let half_height_v = half_height * &v * focus_dist;
 
         Camera {
-            lower_left_corner: &look_from - &half_width_u - &half_height_v - w,
+            lower_left_corner: &look_from - &half_width_u - &half_height_v - focus_dist * w,
             origin: look_from,
             horizontal: 2.0 * half_width_u,
             vertical: 2.0 * half_height_v,
-            // u: ,
-            // v: ,
-            // w: ,
-            // lens_radius
+            u: u,
+            v: v,
+            w: w,
+            lens_radius: lens_radius,
         }
     }
-    fn GetRay(self, s: f32, t: f32) -> Ray {
+    fn get_ray(self, s: f32, t: f32) -> Ray {
+        let rd = self.lens_radius * rnd_in_unit_disc();
+        let offset = self.u * rd.x() + self.v * rd.y();
         Ray {
-            a: self.origin.clone(),
-            b: &self.lower_left_corner + &(s * &self.horizontal) + t * &self.vertical - &self.origin
+            a: self.origin.clone() + offset,
+            b: &self.lower_left_corner + &(s * &self.horizontal) + t * &self.vertical - &self.origin - offset
         }
     }
 }
@@ -401,99 +523,57 @@ fn colour(ray : &Ray, world: &Hitable, depth : i32) -> Vec3 {
 }
 
 fn main() {
-    let NTHREADS : u16 = num_cpus::get() as u16;
-
-    let nX = 800;
-    let nY = 400;
+    let n_x = 800;
+    let n_y = 400;
 
     let aa_samples : u16 = 100;
 
     let mut rng = thread_rng();
 
-    let cam = Camera::Create(
-        Vec3 { e: [-2.0, 2.0,  1.0]},
-        Vec3 { e: [ 0.0, 0.0, -1.0]},
+    // let cam = Camera::create(
+    //     Vec3 { e: [-2.0, 2.0,  1.0]},
+    //     Vec3 { e: [ 0.0, 0.0, -1.0]},
+    //     Vec3 { e: [ 0.0, 1.0,  0.0]},
+    //     45.0,
+    //     (n_x as f32) / (n_y as f32)
+    // );
+
+    let look_from = Vec3 { e: [ 13.0, 2.0, 3.0]};
+    let look_at = Vec3 { e: [ 0.0, 0.0, 0.0]};
+    let cam = Camera::create(
+        look_from,
+        look_at,
         Vec3 { e: [ 0.0, 1.0,  0.0]},
-        45.0,
-        (nX as f32) / (nY as f32)
+        20.0,
+        (n_x as f32) / (n_y as f32),
+        0.1,
+        10.0,
     );
 
-    // let cam = Camera::Create(
+    // let cam = Camera::create(
     //     Vec3 { e: [ 0.0, 0.0,  0.0]},
     //     Vec3 { e: [ 0.0, 0.0, -1.0]},
     //     Vec3 { e: [ 0.0, 1.0,  0.0]},
     //     90.0,
-    //     (nX as f32) / (nY as f32)
+    //     (n_x as f32) / (n_y as f32)
     // );
 
-    let sphere_radius: f32 = (f32::consts::PI / 4.0).cos();
-    let world : HitList = HitList {
-        list: vec![
-            Sphere {
-                centre: Vec3 { e: [0.0, 0.0, -1.0]}, 
-                radius: 0.5,
-                material: Material::make_lambertian(
-                    Vec3 { e: [0.1, 0.2, 0.5]},
-                )
-            },
-            Sphere {
-                centre: Vec3 { e: [0.0, -100.5, -1.0]}, 
-                radius: 100.0,
-                material: Material::make_lambertian(
-                    Vec3 { e: [0.8, 0.8, 0.0]},
-                )
-            },
-            Sphere {
-                centre: Vec3 { e: [1.0, 0.0, -1.0]}, 
-                radius: 0.5,
-                material: Material::make_metal(
-                    Vec3 { e: [0.8, 0.6, 0.2]},
-                    1.0,
-                )
-            },
-            Sphere {
-                centre: Vec3 { e: [-1.0, 0.0, -1.0]}, 
-                radius: 0.5,
-                material: Material::make_dielectric(1.5)
-            },
-            Sphere {
-                centre: Vec3 { e: [-1.0, 0.0, -1.0]}, 
-                radius: -0.45,
-                material: Material::make_dielectric(1.5)
-            },
-        ]
-        // list: vec![
-        //     Sphere {
-        //         centre: Vec3 { e: [-sphere_radius, 0.0, -1.0]}, 
-        //         radius: sphere_radius,
-        //         material: Material::make_lambertian(
-        //             Vec3 { e: [0.0, 0.0, 1.0]},
-        //         )
-        //     },
-        //     Sphere {
-        //         centre: Vec3 { e: [sphere_radius, 0.0, -1.0]}, 
-        //         radius: sphere_radius,
-        //         material: Material::make_lambertian(
-        //             Vec3 { e: [1.0, 0.0, 0.0]},
-        //         )
-        //     },
-        // ]
-    };
+    let world : HitList = HitList::random_world(&mut rng);
 
     let aa_division : f32 = f32::from(aa_samples);
 
-    println!("P3\n{} {}\n255", nX, nY);
-    for y_coord in (0..nY).rev() {
-        for x_coord in 0..nX {
+    println!("P3\n{} {}\n255", n_x, n_y);
+    for y_coord in (0..n_y).rev() {
+        for x_coord in 0..n_x {
             let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
             for aa_iter in 0..aa_samples {
                 let rand_x : f32 = rng.gen::<f64>() as f32;
                 let rand_y : f32 = rng.gen::<f64>() as f32;
 
-                let u: f32 = (rand_x + x_coord as f32) / nX as f32;
-                let v: f32 = (rand_y + y_coord as f32) / nY as f32;
+                let u: f32 = (rand_x + x_coord as f32) / n_x as f32;
+                let v: f32 = (rand_y + y_coord as f32) / n_y as f32;
 
-                let ray = &cam.GetRay(u, v);
+                let ray = &cam.get_ray(u, v);
 
                 col_sum += colour(&ray, &world, 0);
             }

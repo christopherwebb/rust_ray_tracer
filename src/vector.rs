@@ -9,9 +9,9 @@ use std::ops::{
     Div,
     DivAssign
 };
-use std::option;
+// use std::option;
 use std::clone::Clone;
-use std::marker::Copy;
+// use std::marker::Copy;
 use rand::thread_rng;
 use rand::Rng;
 
@@ -273,20 +273,33 @@ pub fn unit_vector(vec : &Vec3) -> Vec3 {
 pub fn rnd_in_unit_sphere() -> Vec3 {
     let mut rng = thread_rng();
 
-    let mut x : Vec3 = Vec3 {e: [4.0, 4.0, 4.0]};
+    // let mut x : Vec3 = Vec3 {e: [4.0, 4.0, 4.0]};
 
-    while {
-        x = 2.0 * Vec3{
+    // while {
+    //     x = 2.0 * Vec3{
+    //         e: [
+    //             rng.gen::<f64>() as f32,
+    //             rng.gen::<f64>() as f32,
+    //             rng.gen::<f64>() as f32,
+    //         ]
+    //     } - Vec3{ e: [1.0, 1.0, 1.0]};
+    //     x.squared_length() >= 1.0
+    // } {}
+
+    // return x;
+
+    loop {
+        let x = 2.0 * Vec3{
             e: [
                 rng.gen::<f64>() as f32,
                 rng.gen::<f64>() as f32,
                 rng.gen::<f64>() as f32,
             ]
         } - Vec3{ e: [1.0, 1.0, 1.0]};
-        x.squared_length() >= 1.0
-    } {}
-
-    return x;      
+        if x.squared_length() < 1.0 {
+            break x;
+        }
+    }     
 }
 
 pub fn rnd_in_unit_disc() -> Vec3 {
@@ -301,7 +314,7 @@ pub fn rnd_in_unit_disc() -> Vec3 {
         ]} - &sub;
 
         if dot(&p, &p) < 1.0 {
-            return p
+            break p;
         }
     }
 }
