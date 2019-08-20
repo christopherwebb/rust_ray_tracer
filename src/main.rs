@@ -20,11 +20,9 @@ use crate::vector::{
 };
 
 mod camera;
-use crate::camera::Camera;
 
 mod world;
 use crate::world::{
-    HitList,
     Hitable,
 };
 
@@ -99,42 +97,15 @@ fn main() {
 
     let n_x : i32 = matches.value_of("width").unwrap().parse::<i32>().unwrap();
     let n_y : i32 = matches.value_of("height").unwrap().parse::<i32>().unwrap();
+    let aspect = (n_x as f32) / (n_y as f32);
+
     let aa_samples : i32 = matches.value_of("aa_samples").unwrap().parse::<i32>().unwrap();
+    let aa_division : f32 = aa_samples as f32;
 
     let mut rng = thread_rng();
 
-    // let cam = Camera::create(
-    //     Vec3 { e: [-2.0, 2.0,  1.0]},
-    //     Vec3 { e: [ 0.0, 0.0, -1.0]},
-    //     Vec3 { e: [ 0.0, 1.0,  0.0]},
-    //     45.0,
-    //     (n_x as f32) / (n_y as f32)
-    // );
-
-    let look_from = Vec3 { e: [ 13.0, 2.0, 3.0]};
-    let look_at = Vec3 { e: [ 0.0, 0.0, 0.0]};
-    let cam = Camera::create(
-        look_from,
-        look_at,
-        Vec3 { e: [ 0.0, 1.0,  0.0]},
-        20.0,
-        (n_x as f32) / (n_y as f32),
-        0.1,
-        10.0,
-    );
-
-    // let cam = Camera::create(
-    //     Vec3 { e: [ 0.0, 0.0,  0.0]},
-    //     Vec3 { e: [ 0.0, 0.0, -1.0]},
-    //     Vec3 { e: [ 0.0, 1.0,  0.0]},
-    //     90.0,
-    //     (n_x as f32) / (n_y as f32)
-    // );
-
-    let world : HitList = HitList::random_world(&mut rng);
-
-    // let aa_division : f32 = f32::from(aa_samples);
-    let aa_division : f32 = aa_samples as f32;
+    let example = matches.value_of("width").unwrap().to_string();
+    let (world, cam) = examples::generate_example(example, &mut rng, aspect);
 
     println!("P3\n{} {}\n255", n_x, n_y);
     for y_coord in (0..n_y).rev() {

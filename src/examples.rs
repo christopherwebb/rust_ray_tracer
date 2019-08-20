@@ -12,6 +12,8 @@ use crate::world::{
     Sphere,
 };
 
+use crate::camera::Camera;
+
 impl HitList {
     pub fn three_spheres_on_world() -> HitList {
         HitList {
@@ -142,5 +144,62 @@ impl HitList {
         HitList {
             list: sphere_list
         }
+    }
+}
+
+pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) -> (HitList, Camera) {
+    match example_name.as_ref() {
+        "three_spheres_on_world" => {(
+            HitList::three_spheres_on_world(),
+            Camera::create(
+                Vec3 { e: [ 0.0, 0.0,  0.0]},
+                Vec3 { e: [ 0.0, 0.0, -1.0]},
+                Vec3 { e: [ 0.0, 1.0,  0.0]},
+                90.0,
+                aspect,
+                0.1,
+                10.0,
+            )
+        )},
+        "blue_red_spheres" => {(
+            HitList::blue_red_spheres(),
+            Camera::create(
+                Vec3 { e: [-2.0, 2.0,  1.0]},
+                Vec3 { e: [ 0.0, 0.0, -1.0]},
+                Vec3 { e: [ 0.0, 1.0,  0.0]},
+                45.0,
+                aspect,
+                0.1,
+                10.0,
+            ),
+        )},
+        "random_world" => {
+            let look_from = Vec3 { e: [ 13.0, 2.0, 3.0]};
+            let look_at = Vec3 { e: [ 0.0, 0.0, 0.0]};
+            (
+                HitList::random_world(rng),
+                Camera::create(
+                    look_from,
+                    look_at,
+                    Vec3 { e: [ 0.0, 1.0,  0.0]},
+                    20.0,
+                    aspect,
+                    0.1,
+                    10.0,
+                ),
+            )
+        },
+        _ => {(
+            HitList{ list: vec![] },
+            Camera::create(
+                Vec3 { e: [ 0.0, 0.0,  0.0]},
+                Vec3 { e: [ 0.0, 0.0, -1.0]},
+                Vec3 { e: [ 0.0, 1.0,  0.0]},
+                90.0,
+                aspect,
+                0.1,
+                10.0,
+            ),
+        )}
     }
 }
