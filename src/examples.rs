@@ -10,6 +10,7 @@ use crate::vector::Vec3;
 use crate::world::{
     HitList,
     Sphere,
+    MovingSphere,
 };
 
 use crate::camera::Camera;
@@ -17,7 +18,7 @@ use crate::camera::Camera;
 impl HitList {
     pub fn three_spheres_on_world() -> HitList {
         HitList {
-            list: vec![
+            spheres: vec![
                 Sphere {
                     centre: Vec3 { e: [0.0, 0.0, -1.0]},
                     radius: 0.5,
@@ -50,13 +51,14 @@ impl HitList {
                     radius: -0.45,
                     material: Material::make_dielectric(1.5)
                 },
-            ]
+            ],
+            moving_spheres: vec![],
         }
     }
     pub fn blue_red_spheres() -> HitList {
         let sphere_radius: f32 = (f32::consts::PI / 4.0).cos();
         HitList {
-            list: vec![
+            spheres: vec![
                 Sphere {
                     centre: Vec3 { e: [-sphere_radius, 0.0, -1.0]},
                     radius: sphere_radius,
@@ -71,13 +73,15 @@ impl HitList {
                         Vec3 { e: [1.0, 0.0, 0.0]},
                     )
                 },
-            ]
+            ],
+            moving_spheres: vec![],
         }
     }
     pub fn random_world(rng: &mut ThreadRng) -> HitList {
         let small_radius = 0.2;
         let large_radius = 1.0;
         let mut sphere_list = vec![];
+        let mut moving_sphere_list = vec![];
 
         sphere_list.push(Sphere {
             centre: Vec3 { e: [0.0, -1000.0, 0.0]},
@@ -120,36 +124,50 @@ impl HitList {
                 ]};
 
                 if (centre - distance_filter).length() > 0.9 {
-                    sphere_list.push(Sphere {
-                        centre: centre,
-                        radius: 0.2,
-                        material: match chosen_mat {
-                            x if x < 0.8 => Material::make_lambertian(Vec3 { e: [
+                    match chosen_mat {
+                        x if x < 0.8 => moving_sphere_list.push(MovingSphere {
+                            centre0: centre,
+                            centre1: centre + Vec3{ e: [
+                                0.0, 0.5 * rng.gen::<f64>() as f32, 0.0
+                            ]},
+                            time0: 0.0,
+                            time1: 1.0,
+                            radius: 0.2,
+                            material: Material::make_lambertian(Vec3 { e: [
                                 rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
                                 rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
                                 rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
                             ]}),
-                            x if x < 0.95 => Material::make_metal(Vec3 { e: [
+                        }),
+                        x if x < 0.95 => sphere_list.push(Sphere {
+                            centre: centre,
+                            radius: 0.2,
+                            material: Material::make_metal(Vec3 { e: [
                                 0.5 * (1.0 + rng.gen::<f64>() as f32),
                                 0.5 * (1.0 + rng.gen::<f64>() as f32),
                                 0.5 * (1.0 + rng.gen::<f64>() as f32),
                             ]}, 0.5 * rng.gen::<f64>() as f32),
-                            _ => Material::make_dielectric(1.5),
-                        },
-                    });
+                        }),
+                        _ => sphere_list.push(Sphere {
+                            centre: centre,
+                            radius: 0.2,
+                            material: Material::make_dielectric(1.5),
+                        })
+                    }
                 }
             }
         }
 
         HitList {
-            list: sphere_list
+            spheres: sphere_list,
+            moving_spheres: moving_sphere_list,
         }
     }
 }
 
 pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) -> (HitList, Camera) {
     match example_name.as_ref() {
-        "three_spheres_on_world" => {(
+        "3balls" => {(
             HitList::three_spheres_on_world(),
             Camera::create(
                 Vec3 { e: [ 0.0, 0.0,  0.0]},
@@ -159,9 +177,11 @@ pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) 
                 aspect,
                 0.1,
                 10.0,
+                0.0,
+                0.0,
             )
         )},
-        "blue_red_spheres" => {(
+        "blue_red" => {(
             HitList::blue_red_spheres(),
             Camera::create(
                 Vec3 { e: [-2.0, 2.0,  1.0]},
@@ -171,9 +191,11 @@ pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) 
                 aspect,
                 0.1,
                 10.0,
+                0.0,
+                0.0,
             ),
         )},
-        "random_world" => {
+        "final_weekend" => {
             let look_from = Vec3 { e: [ 13.0, 2.0, 3.0]};
             let look_at = Vec3 { e: [ 0.0, 0.0, 0.0]};
             (
@@ -186,11 +208,13 @@ pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) 
                     aspect,
                     0.1,
                     10.0,
+                    0.0,
+                    1.0,
                 ),
             )
         },
         _ => {(
-            HitList{ list: vec![] },
+            HitList{ spheres: vec![], moving_spheres: vec![],},
             Camera::create(
                 Vec3 { e: [ 0.0, 0.0,  0.0]},
                 Vec3 { e: [ 0.0, 0.0, -1.0]},
@@ -199,6 +223,8 @@ pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) 
                 aspect,
                 0.1,
                 10.0,
+                0.0,
+                0.0,
             ),
         )}
     }

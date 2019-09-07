@@ -1,4 +1,6 @@
 use std::f32;
+use rand::thread_rng;
+use rand::Rng;
 
 use crate::vector::{
     Vec3,
@@ -14,10 +16,12 @@ pub struct Camera {
     lower_left_corner : Vec3,
     horizontal : Vec3,
     vertical : Vec3,
-    u: Vec3,
-    v: Vec3,
-    w: Vec3,
-    lens_radius: f32,
+    u : Vec3,
+    v : Vec3,
+    w : Vec3,
+    lens_radius : f32,
+    time_0 : f32,
+    time_1 : f32,
 }
 
 impl Camera {
@@ -27,8 +31,10 @@ impl Camera {
         up : Vec3,
         fvov : f32,
         aspect : f32,
-        aperature: f32,
-        focus_dist: f32,
+        aperature : f32,
+        focus_dist : f32,
+        time_0 : f32,
+        time_1 : f32,
     ) -> Camera {
         let u : Vec3;
         let v : Vec3;
@@ -55,14 +61,21 @@ impl Camera {
             v: v,
             w: w,
             lens_radius: lens_radius,
+            time_0: time_0,
+			time_1: time_1,
         }
     }
     pub fn get_ray(self, s: f32, t: f32) -> Ray {
         let rd = self.lens_radius * rnd_in_unit_disc();
         let offset = self.u * rd.x() + self.v * rd.y();
+
+        let mut rng = thread_rng();
+        let time = self.time_0 + (self.time_1 - self.time_0) * rng.gen::<f64>() as f32;
+
         Ray {
             a: self.origin.clone() + offset,
-            b: &self.lower_left_corner + &(s * &self.horizontal) + t * &self.vertical - &self.origin - offset
+            b: &self.lower_left_corner + &(s * &self.horizontal) + t * &self.vertical - &self.origin - offset,
+            time: time,
         }
     }
 }

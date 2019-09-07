@@ -53,6 +53,7 @@ impl Material {
                     ray_out : Ray {
                         a: hit.p,
                         b: target - hit.p,
+                        time: ray_in.time,
                     },
                 }
             },
@@ -61,6 +62,7 @@ impl Material {
                 let scattered : Ray = Ray {
                     a: hit.p,
                     b: &reflected + &(self.fuzz * rnd_in_unit_sphere()),
+                    time: ray_in.time,
                 };
 
                 MaterialHit {
@@ -107,6 +109,7 @@ impl Material {
                         ray_out : Ray {
                             a: hit.p,
                             b: ray,
+                            time: ray_in.time,
                         },
                     }
                 } else {
@@ -116,6 +119,7 @@ impl Material {
                         ray_out : Ray {
                             a: hit.p,
                             b: reflected,
+                            time: ray_in.time,
                         },
                     }
                 }

@@ -85,7 +85,7 @@ fn main() {
                .long("example")
                .value_name("EXAMPLE")
                .help("generate builtin example")
-               .possible_values(&["3balls, final_weekend"])
+               .possible_values(&["3balls", "blue_red", "final_weekend"])
                .takes_value(true)
                .conflicts_with("file"))
         .arg(Arg::with_name("file")
@@ -104,7 +104,7 @@ fn main() {
 
     let mut rng = thread_rng();
 
-    let example = matches.value_of("width").unwrap().to_string();
+    let example = matches.value_of("example").unwrap().to_string();
     let (world, cam) = examples::generate_example(example, &mut rng, aspect);
 
     println!("P3\n{} {}\n255", n_x, n_y);

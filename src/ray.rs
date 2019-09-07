@@ -3,6 +3,7 @@ use crate::vector::Vec3;
 pub struct Ray {
     pub a : Vec3,
     pub b : Vec3,
+    pub time : f32,
 }
 
 impl Ray {
