@@ -56,6 +56,12 @@ fn colour(ray : &Ray, world: &Hitable, depth : i32) -> Vec3 {
 }
 
 fn main() {
+    let DEFAULT_TIME = 0.0;
+    let DEFAULT_TIME_LENGTH = 0.033;
+
+    let DEFAULT_TIME_STR = DEFAULT_TIME.to_string();
+    let DEFAULT_TIME_LENGTH_STR = DEFAULT_TIME_LENGTH.to_string();
+
     let matches = App::new("Ray Tracer")
        .version("0.1")
        .about("Ray Tracer, written in rust, building off of Peter Shirley's Ray Tracing In One Weekend")
@@ -84,13 +90,13 @@ fn main() {
         .arg(Arg::with_name("time")
                .short("t")
                .long("time")
-               .default_value("0")
+               .default_value(&DEFAULT_TIME_STR)
                .value_name("INT")
                .help("Time of shutter open")
                .takes_value(true))
         .arg(Arg::with_name("shutter_length")
                .long("time_length")
-               .default_value("0")
+               .default_value(&DEFAULT_TIME_LENGTH_STR)
                .value_name("INT")
                .help("Length of time shutter is open")
                .takes_value(true))
@@ -112,9 +118,16 @@ fn main() {
     let n_y : i32 = matches.value_of("height").unwrap().parse::<i32>().unwrap();
     let aspect = (n_x as f32) / (n_y as f32);
 
-
-    let time_start = matches.value_of("time").unwrap().parse::<f32>().unwrap();
-    let time_length = matches.value_of("shutter_length").unwrap().parse::<f32>().unwrap();
+    let time_start = matches
+        .value_of("time")
+        .unwrap_or(&DEFAULT_TIME.to_string())
+        .parse::<f32>()
+        .unwrap_or(DEFAULT_TIME);
+    let time_length = matches
+        .value_of("shutter_length")
+        .unwrap_or(&DEFAULT_TIME_LENGTH.to_string())
+        .parse::<f32>()
+        .unwrap_or(DEFAULT_TIME_LENGTH);
 
     let aa_samples : i32 = matches.value_of("aa_samples").unwrap().parse::<i32>().unwrap();
     let aa_division : f32 = aa_samples as f32;
