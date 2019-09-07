@@ -81,6 +81,19 @@ fn main() {
                .value_name("INT")
                .help("Number of samples per pixel")
                .takes_value(true))
+        .arg(Arg::with_name("time")
+               .short("t")
+               .long("time")
+               .default_value("0")
+               .value_name("INT")
+               .help("Time of shutter open")
+               .takes_value(true))
+        .arg(Arg::with_name("shutter_length")
+               .long("time_length")
+               .default_value("0")
+               .value_name("INT")
+               .help("Length of time shutter is open")
+               .takes_value(true))
         .arg(Arg::with_name("example")
                .long("example")
                .value_name("EXAMPLE")
@@ -98,6 +111,10 @@ fn main() {
     let n_x : i32 = matches.value_of("width").unwrap().parse::<i32>().unwrap();
     let n_y : i32 = matches.value_of("height").unwrap().parse::<i32>().unwrap();
     let aspect = (n_x as f32) / (n_y as f32);
+
+
+    let time_start = matches.value_of("time").unwrap().parse::<f32>().unwrap();
+    let time_length = matches.value_of("shutter_length").unwrap().parse::<f32>().unwrap();
 
     let aa_samples : i32 = matches.value_of("aa_samples").unwrap().parse::<i32>().unwrap();
     let aa_division : f32 = aa_samples as f32;
