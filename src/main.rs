@@ -3,6 +3,9 @@ use rand::thread_rng;
 use rand::Rng;
 use clap::{Arg, App};
 
+use std::sync::{Arc, mpsc};
+use std::thread;
+
 mod material;
 use crate::material::{
     Material,
@@ -24,11 +27,12 @@ mod camera;
 mod world;
 use crate::world::{
     Hitable,
+    HitList,
 };
 
 mod examples;
 
-fn colour(ray : &Ray, world: &Hitable, depth : i32) -> Vec3 {
+fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
     let mut hit_rec : HitRecord = HitRecord {
             t: 10000.0,
             p: Vec3 { e: [0.0, 0.0, 0.0]},
@@ -53,6 +57,16 @@ fn colour(ray : &Ray, world: &Hitable, depth : i32) -> Vec3 {
     let unit_dir : Vec3 = unit_vector(&dir);
     let t : f32 = 0.5 * (unit_dir.y() + 1.0);
     (1.0 - t) * Vec3 { e: [1.0, 1.0, 1.0]} + t * Vec3 { e: [0.5, 0.7, 1.0]}
+}
+
+fn sample_range(
+    thread_number: u32,
+    total_threads : u32,
+    total_samples: u32
+) -> (u32, u32) {
+    let from = thread_number * total_samples / total_threads;
+    let to = (thread_number + 1) * total_samples / total_threads;
+    (from, to)
 }
 
 fn main() {
@@ -95,11 +109,14 @@ fn main() {
                 .help("Load from file (not yet implemented)"))
        .get_matches();
 
-    let n_x : i32 = matches.value_of("width").unwrap().parse::<i32>().unwrap();
-    let n_y : i32 = matches.value_of("height").unwrap().parse::<i32>().unwrap();
+    // let NTHREADS = 4;
+    let NTHREADS = num_cpus::get() as u32;
+
+    let n_x : u32 = matches.value_of("width").unwrap().parse::<u32>().unwrap();
+    let n_y : u32 = matches.value_of("height").unwrap().parse::<u32>().unwrap();
     let aspect = (n_x as f32) / (n_y as f32);
 
-    let aa_samples : i32 = matches.value_of("aa_samples").unwrap().parse::<i32>().unwrap();
+    let aa_samples : u32 = matches.value_of("aa_samples").unwrap().parse::<u32>().unwrap();
     let aa_division : f32 = aa_samples as f32;
 
     let mut rng = thread_rng();
@@ -107,22 +124,52 @@ fn main() {
     let example = matches.value_of("example").unwrap().to_string();
     let (world, cam) = examples::generate_example(example, &mut rng, aspect);
 
+    let arc_world = Arc::new(world);
+
     println!("P3\n{} {}\n255", n_x, n_y);
     for y_coord in (0..n_y).rev() {
         for x_coord in 0..n_x {
-            let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
-            for _aa_iter in 0..aa_samples {
-                let rand_x : f32 = rng.gen::<f64>() as f32;
-                let rand_y : f32 = rng.gen::<f64>() as f32;
+            let mut handles = vec![];
+            let (tx, rx) = mpsc::channel();
 
-                let u: f32 = (rand_x + x_coord as f32) / n_x as f32;
-                let v: f32 = (rand_y + y_coord as f32) / n_y as f32;
+            for thread in 0..NTHREADS {
+                let arc_world_n = Arc::clone(&arc_world);
+                let tx_n = mpsc::Sender::clone(&tx);
 
-                let ray = &cam.get_ray(u, v);
+                let handle = thread::spawn(move || {
+                    let mut rng = thread_rng();
 
-                col_sum += colour(&ray, &world, 0);
+                    let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
+
+                    let (from, to) = sample_range(thread, NTHREADS, aa_samples);
+                    for _ in from..to {
+                        let rand_x : f32 = rng.gen::<f64>() as f32;
+                        let rand_y : f32 = rng.gen::<f64>() as f32;
+
+                        let u: f32 = (rand_x + x_coord as f32) / n_x as f32;
+                        let v: f32 = (rand_y + y_coord as f32) / n_y as f32;
+
+                        let ray = &cam.get_ray(u, v);
+
+                        col_sum += colour(&ray, &arc_world_n, 0);
+                    }
+                    let col : Vec3 = col_sum / aa_division;
+                    tx_n.send(col).unwrap();
+                });
+                handles.push(handle);
             }
-            let col : Vec3 = col_sum / aa_division;
+
+            drop(tx);
+
+            for handle in handles {
+                handle.join().unwrap();
+            }
+
+            let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
+            for received in rx.iter() {
+                col_sum += received;
+            }
+            let col : Vec3 = col_sum / NTHREADS as f32;
 
             let ir = (255.99 * col.r()) as u64;
             let ig = (255.99 * col.g()) as u64;
