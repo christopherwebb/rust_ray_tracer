@@ -1,3 +1,4 @@
+use std::cmp;
 use std::f32;
 use rand::thread_rng;
 use rand::Rng;
@@ -40,7 +41,7 @@ fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
             material: Material::make_dummy_material(),
         };
 
-    if world.hit(ray, 0.001, 10000.0, &mut hit_rec) {
+    if world.hit(ray, 0.001, 100000.0, &mut hit_rec) {
         if depth >= 50 {
             return Vec3 { e: [0.0, 0.0, 0.0]};
         }
@@ -99,7 +100,7 @@ fn main() {
                .long("example")
                .value_name("EXAMPLE")
                .help("generate builtin example")
-               .possible_values(&["3balls", "blue_red", "final_weekend"])
+               .possible_values(&["3balls", "blue_red", "final_weekend", "cylinders"])
                .takes_value(true)
                .conflicts_with("file"))
         .arg(Arg::with_name("file")
@@ -109,7 +110,6 @@ fn main() {
                 .help("Load from file (not yet implemented)"))
        .get_matches();
 
-    // let NTHREADS = 4;
     let NTHREADS = num_cpus::get() as u32;
 
     let n_x : u32 = matches.value_of("width").unwrap().parse::<u32>().unwrap();
@@ -153,7 +153,7 @@ fn main() {
 
                         col_sum += colour(&ray, &arc_world_n, 0);
                     }
-                    let col : Vec3 = col_sum / aa_division;
+                    let col : Vec3 = col_sum / cmp::max(1, to - from) as f32;
                     tx_n.send(col).unwrap();
                 });
                 handles.push(handle);
@@ -166,10 +166,12 @@ fn main() {
             }
 
             let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
+            let mut count = 0;
             for received in rx.iter() {
                 col_sum += received;
+                count += 1;
             }
-            let col : Vec3 = col_sum / NTHREADS as f32;
+            let col : Vec3 = col_sum / count as f32;
 
             let ir = (255.99 * col.r()) as u64;
             let ig = (255.99 * col.g()) as u64;

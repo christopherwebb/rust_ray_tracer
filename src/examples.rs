@@ -11,6 +11,7 @@ use crate::world::{
     HitList,
     Sphere,
     MovingSphere,
+    Cylinder,
 };
 
 use crate::camera::Camera;
@@ -53,6 +54,7 @@ impl HitList {
                 },
             ],
             moving_spheres: vec![],
+            cylinders: vec![],
         }
     }
     pub fn blue_red_spheres() -> HitList {
@@ -75,6 +77,52 @@ impl HitList {
                 },
             ],
             moving_spheres: vec![],
+            cylinders: vec![],
+        }
+    }
+    pub fn cylinders() -> HitList {
+        HitList {
+            spheres: vec![],
+            moving_spheres: vec![],
+            cylinders: vec![
+                Cylinder {
+                    centre: Vec3 { e: [1.0, 0.0, -1.0]},
+                    radius: 0.5,
+                    phi_max: 2.0 * f32::consts::PI,
+                    zMin: -0.25,
+                    zMax: 0.25,
+                    material: Material::make_lambertian(
+                        Vec3 { e: [0.1, 0.2, 0.5]},
+                    )
+                },
+                Cylinder {
+                    centre: Vec3 { e: [0.0, 0.0, -1.0]},
+                    radius: 0.5,
+                    phi_max: 2.0 * f32::consts::PI,
+                    zMin: -1.0,
+                    zMax: 1.0,
+                    material: Material::make_metal(
+                        Vec3 { e: [0.8, 0.6, 0.2]},
+                        1.0,
+                    )
+                },
+                Cylinder {
+                    centre: Vec3 { e: [-1.0, 0.0, -1.0]},
+                    radius: 0.5,
+                    phi_max: 2.0 * f32::consts::PI,
+                    zMin: -0.5,
+                    zMax: 0.5,
+                    material: Material::make_dielectric(1.5)
+                },
+                Cylinder {
+                    centre: Vec3 { e: [-1.0, 0.0, -1.0]},
+                    radius: -0.45,
+                    phi_max: 2.0 * f32::consts::PI,
+                    zMin: -0.45,
+                    zMax: 0.45,
+                    material: Material::make_dielectric(1.5)
+                },
+            ],
         }
     }
     pub fn random_world(rng: &mut ThreadRng) -> HitList {
@@ -161,6 +209,7 @@ impl HitList {
         HitList {
             spheres: sphere_list,
             moving_spheres: moving_sphere_list,
+            cylinders: vec![],
         }
     }
 }
@@ -172,6 +221,20 @@ pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) 
             Camera::create(
                 Vec3 { e: [ 0.0, 0.0,  0.0]},
                 Vec3 { e: [ 0.0, 0.0, -1.0]},
+                Vec3 { e: [ 0.0, 1.0,  0.0]},
+                90.0,
+                aspect,
+                0.1,
+                10.0,
+                0.0,
+                0.0,
+            )
+        )},
+        "cylinders" => {(
+            HitList::cylinders(),
+            Camera::create(
+                Vec3 { e: [ 1.5, 1.0,  1.5]},
+                Vec3 { e: [ 0.0, 0.0, 0.0]},
                 Vec3 { e: [ 0.0, 1.0,  0.0]},
                 90.0,
                 aspect,
@@ -214,7 +277,11 @@ pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) 
             )
         },
         _ => {(
-            HitList{ spheres: vec![], moving_spheres: vec![],},
+            HitList{
+                spheres: vec![],
+                moving_spheres: vec![],
+                cylinders: vec![],
+            },
             Camera::create(
                 Vec3 { e: [ 0.0, 0.0,  0.0]},
                 Vec3 { e: [ 0.0, 0.0, -1.0]},
