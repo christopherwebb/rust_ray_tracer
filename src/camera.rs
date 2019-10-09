@@ -57,6 +57,8 @@ impl Camera {
             origin: look_from,
             horizontal: 2.0 * half_width_u,
             vertical: 2.0 * half_height_v,
+            // horizontal: Vec3 {e:[1.0, 1.0, 1.0]},
+            // vertical: Vec3 {e:[1.0, 1.0, 1.0]},
             u: u,
             v: v,
             w: w,
@@ -67,7 +69,8 @@ impl Camera {
     }
     pub fn get_ray(self, s: f32, t: f32) -> Ray {
         let rd = self.lens_radius * rnd_in_unit_disc();
-        let offset = self.u * rd.x() + self.v * rd.y();
+        // let offset = self.u * rd.x() + self.v * rd.y();
+        let offset = Vec3 {e:[0.0, 0.0, 0.0]};
 
         let mut rng = thread_rng();
         let time = self.time_0 + (self.time_1 - self.time_0) * rng.gen::<f64>() as f32;
