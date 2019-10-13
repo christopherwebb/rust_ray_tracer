@@ -62,6 +62,8 @@ fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
         //     N.z()+1.0,
         // ]};
 
+        // return Vec3{e: [0.0, 0.0, 0.0]};
+
         return 0.5 * Vec3{e: [
             hit_rec.normal.x() + 1.0,
             hit_rec.normal.y() + 1.0,

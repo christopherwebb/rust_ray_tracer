@@ -53,6 +53,8 @@ pub struct Cylinder {
     pub material: Material,
 }
 
+
+
 impl Hitable for Sphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let oc : Vec3 = ray.origin() - &self.centre;
@@ -135,9 +137,24 @@ impl Hitable for MovingSphere {
 //     pub material: Material,
 // }
 
+fn solve_quadratic(a: f32, b: f32, c: f32) -> (bool, f32, f32) {
+    let discriminant = b * b - 4.0 * a * c;
+
+    if discriminant < 0.0 {
+        return (false, 0.0, 0.0);
+    }
+
+    let t0 = 0.5 * -b + discriminant.sqrt() / a;
+    let t1 = 0.5 * -b - discriminant.sqrt() / a;
+    // (true, min(t0, t1), max(t0, t1))
+    (true, t0.min(t1), t0.max(t1))
+}
+
 impl Hitable for Cylinder {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let oc : Vec3 = ray.origin() - &self.centre;
+        let oz_min = self.zMin - &self.centre.z();
+        let oz_max = self.zMax - &self.centre.z();
 
         // let a : f32 = dot(&ray.direction(), &ray.direction());
         let a : f32 = &ray.b.x() * &ray.b.x() + &ray.b.y() + &ray.b.y();
@@ -145,57 +162,84 @@ impl Hitable for Cylinder {
         let b : f32 = 2.0 * &oc.x() * &ray.b.x() + &oc.y() + &ray.b.y();
         let c : f32 = &oc.x() * &oc.x() + &oc.y() + &oc.y() - self.radius * self.radius;
 
-        let discriminant : f32 = b * b - a * c;
+        // let discriminant : f32 = b * b - a * c;
 
-        if discriminant <= 0.0 {
+        // if discriminant <= 0.0 {
+        //     return false;
+        // }
+
+        // let temp : f32 = (-b - (b * b - a * c).sqrt()) / a;
+
+        // let t0 : f32 = if temp > t_min && temp < t_max {
+        //     temp
+        // } else {
+        //     (-b + (b * b - a * c).sqrt()) / a
+        // };
+
+        let (result, t0, t1) = solve_quadratic(a, b, c);
+        if !result {
             return false;
         }
 
-        let temp : f32 = (-b - (b * b - a * c).sqrt()) / a;
-
-        let t0 : f32 = if temp > t_min && temp < t_max {
-            temp
+        let mut t_hit : f32 = if t0 > t_min && t0 < t_max {
+            t0
         } else {
-            (-b + (b * b - a * c).sqrt()) / a
+            t1
         };
 
-        if t0 > t_min && t0 < t_max {
-            let mut hit = ray.point_at_parameter(t0);
+        if t_hit > t_min && t_hit < t_max {
+            let mut hit = ray.point_at_parameter(t_hit);
+            let mut orig_hit = ray.point_at_parameter(t_hit) - self.centre;
 
-            let hit_rad = (hit.x() * hit.x() + hit.y() * hit.y()).sqrt();
-            hit.e[0] *= self.radius / hit_rad;
-            hit.e[1] *= self.radius / hit_rad;
+            let hit_rad = (orig_hit.x() * orig_hit.x() + orig_hit.y() * orig_hit.y()).sqrt();
+            hit.e[0] *= orig_hit.e[0] * self.radius / hit_rad + self.centre.e[0];
+            hit.e[1] *= orig_hit.e[1] * self.radius / hit_rad + self.centre.e[1];
 
-            // let mut phi = std::atan2(hit.y(), hit.x()).;
             let mut phi = hit.y().atan2(hit.x());
             
             if (phi < 0.0) {
                 phi += 2.0 * f32::consts::PI;
             }
 
-            if (hit.z() < self.zMin || hit.z() > self.zMax || phi > self.phi_max) {
-                return false;
-                // if (tShapeHit == t0) {
+            if (orig_hit.z() < oz_min || orig_hit.z() > oz_max || phi > self.phi_max) {
+                // if (t_hit == t1) {
                 //     return false;
                 // }
-                // tShapeHit = t0;
-                
-                // if (t0.UpperBound() > ray.tMax) {
+                t_hit = t1;
+
+                // if t_hit > t_max {
                 //     return false;
                 // }
-                // // <<Compute cylinder hit point and >> 
-                // if (hit.z() < self.zMin || hit.z() > self.zMax || phi > self.phi_max)
-                    // return false;
-           }
+
+                hit = ray.point_at_parameter(t_hit);
+                orig_hit = ray.point_at_parameter(t_hit) - self.centre;
+
+                let hit_rad = (orig_hit.x() * orig_hit.x() + orig_hit.y() * orig_hit.y()).sqrt();
+                hit.e[0] *= self.radius / hit_rad;
+                hit.e[1] *= self.radius / hit_rad;
+
+                hit.e[0] *= orig_hit.e[0] * self.radius / hit_rad + self.centre.e[0];
+                hit.e[1] *= orig_hit.e[1] * self.radius / hit_rad + self.centre.e[1];
+
+                let mut phi = hit.y().atan2(hit.x());
+            
+                if (phi < 0.0) {
+                    phi += 2.0 * f32::consts::PI;
+                }
+
+                // if (orig_hit.z() < oz_min || orig_hit.z() > oz_max || phi > self.phi_max) {
+                //     return false;
+                // }
+            }
 
             let u = phi / self.phi_max;
-            let v = (hit.z() - self.zMin) / (self.zMax - self.zMin);
+            let v = (hit.z() - oz_min) / (oz_max - oz_min);
 
             // Vector3f dpdu(-self.phi_max * hit.y(), self.phi_max * hit.x(), 0);
             // Vector3f dpdv(0, 0, zMax - zMin);
 
             let dpdu = Vec3 { e: [-self.phi_max * hit.y(), self.phi_max * hit.x(), 0.0]};
-            let dpdv = Vec3 { e: [0.0, 0.0, self.zMax - self.zMin]};
+            let dpdv = Vec3 { e: [0.0, 0.0, oz_max - oz_min]};
 
             let d2Pduu = -self.phi_max * self.phi_max * Vec3 { e: [hit.x(), hit.y(), 0.0]};
             let d2Pduv = Vec3 { e: [0.0, 0.0, 0.0]};
@@ -216,7 +260,7 @@ impl Hitable for Cylinder {
             let dndv = unit_vector(&((g * F - f * G) * invEGF2 * dpdu + 
                                                    (f * F - g * E) * invEGF2 * dpdv));
 
-            rec.t = t0;
+            rec.t = t_hit;
             rec.p = hit;
             // rec.normal = (&rec.p - &self.centre) / self.radius;
             rec.normal = N;

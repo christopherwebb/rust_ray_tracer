@@ -83,53 +83,53 @@ impl HitList {
     pub fn cylinders() -> HitList {
         HitList {
             spheres: vec![
-                Sphere {
-                    centre: Vec3 { e: [0.0, -100.5, -1.0]},
-                    radius: 100.0,
-                    material: Material::make_lambertian(
-                        Vec3 { e: [0.8, 0.8, 0.0]},
-                    )
-                },
+                // Sphere {
+                //     centre: Vec3 { e: [0.0, -100.5, -1.0]},
+                //     radius: 100.0,
+                //     material: Material::make_lambertian(
+                //         Vec3 { e: [0.8, 0.8, 0.0]},
+                //     )
+                // },
             ],
             moving_spheres: vec![],
             cylinders: vec![
                 Cylinder {
                     centre: Vec3 { e: [0.0, 0.0, -1.0]},
-                    radius: 0.5,
+                    radius: 0.05,
                     phi_max: 2.0 * f32::consts::PI,
-                    zMin: -0.5,
-                    zMax: 0.5,
+                    zMin: -0.25,
+                    zMax: 0.25,
                     material: Material::make_lambertian(
                         Vec3 { e: [0.1, 0.2, 0.5]},
                     )
                 },
-                Cylinder {
-                    centre: Vec3 { e: [1.0, 0.0, -1.0]},
-                    radius: 0.5,
-                    phi_max: 2.0 * f32::consts::PI,
-                    zMin: -0.5,
-                    zMax: 0.5,
-                    material: Material::make_metal(
-                        Vec3 { e: [0.8, 0.6, 0.2]},
-                        1.0,
-                    )
-                },
-                Cylinder {
-                    centre: Vec3 { e: [-1.0, 0.0, -1.0]},
-                    radius: 0.5,
-                    phi_max: 2.0 * f32::consts::PI,
-                    zMin: -0.5,
-                    zMax: 0.5,
-                    material: Material::make_dielectric(1.5)
-                },
-                Cylinder {
-                    centre: Vec3 { e: [-1.0, 0.0, -1.0]},
-                    radius: -0.45,
-                    phi_max: 2.0 * f32::consts::PI,
-                    zMin: -0.45,
-                    zMax: 0.45,
-                    material: Material::make_dielectric(1.5)
-                },
+                // Cylinder {
+                //     centre: Vec3 { e: [1.0, 0.0, -1.0]},
+                //     radius: 0.5,
+                //     phi_max: 2.0 * f32::consts::PI,
+                //     zMin: -2.0,
+                //     zMax: 2.0,
+                //     material: Material::make_metal(
+                //         Vec3 { e: [0.8, 0.6, 0.2]},
+                //         1.0,
+                //     )
+                // },
+                // Cylinder {
+                //     centre: Vec3 { e: [-1.0, 0.0, -1.0]},
+                //     radius: 0.5,
+                //     phi_max: 2.0 * f32::consts::PI,
+                //     zMin: -0.5,
+                //     zMax: 0.5,
+                //     material: Material::make_dielectric(1.5)
+                // },
+                // Cylinder {
+                //     centre: Vec3 { e: [-1.0, 0.0, -1.0]},
+                //     radius: -0.45,
+                //     phi_max: 2.0 * f32::consts::PI,
+                //     zMin: -0.45,
+                //     zMax: 0.45,
+                //     material: Material::make_dielectric(1.5)
+                // },
             ],
         }
     }
@@ -241,7 +241,7 @@ pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) 
         "cylinders" => {(
             HitList::cylinders(),
             Camera::create(
-                Vec3 { e: [ 0.0, 0.0,  0.0]},
+                Vec3 { e: [ 4.0, 4.0,  4.0]},
                 Vec3 { e: [ 0.0, 0.0, -1.0]},
                 Vec3 { e: [ 0.0, 1.0,  0.0]},
                 90.0,
