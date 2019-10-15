@@ -144,10 +144,25 @@ fn solve_quadratic(a: f32, b: f32, c: f32) -> (bool, f32, f32) {
         return (false, 0.0, 0.0);
     }
 
-    let t0 = 0.5 * -b + discriminant.sqrt() / a;
-    let t1 = 0.5 * -b - discriminant.sqrt() / a;
+    let t0 = -0.5 * (b + discriminant.sqrt()) / a;
+    let t1 = -0.5 * (b - discriminant.sqrt()) / a;
     // (true, min(t0, t1), max(t0, t1))
-    (true, t0.min(t1), t0.max(t1))
+    // (true, t0.min(t1), t0.max(t1))
+
+    // let q = if b < 0.0 {
+    //     -0.5 * (b - discriminant.sqrt())
+    // } else {
+    //     -0.5 * (b + discriminant.sqrt())
+    // };
+
+    // let t0 = q / a;
+    // let t1 = c / q;
+
+    if t0 > t1 {
+        return (true, t1, t0);
+    } else {
+        return (true, t0, t1);
+    }
 }
 
 impl Hitable for Cylinder {
@@ -155,12 +170,14 @@ impl Hitable for Cylinder {
         let oc : Vec3 = ray.origin() - &self.centre;
         let oz_min = self.zMin - &self.centre.z();
         let oz_max = self.zMax - &self.centre.z();
+        // let oz_min = self.zMin;
+        // let oz_max = self.zMax;
 
         // let a : f32 = dot(&ray.direction(), &ray.direction());
         let a : f32 = &ray.b.x() * &ray.b.x() + &ray.b.y() + &ray.b.y();
         // let b : f32 = dot(&oc, &ray.direction());
-        let b : f32 = 2.0 * &oc.x() * &ray.b.x() + &oc.y() + &ray.b.y();
-        let c : f32 = &oc.x() * &oc.x() + &oc.y() + &oc.y() - self.radius * self.radius;
+        let b : f32 = 2.0 * (&oc.x() * &ray.b.x() + &oc.y() * &ray.b.y());
+        let c : f32 = &oc.x() * &oc.x() + &oc.y() * &oc.y() - self.radius * self.radius;
 
         // let discriminant : f32 = b * b - a * c;
 
@@ -181,47 +198,67 @@ impl Hitable for Cylinder {
             return false;
         }
 
-        let mut t_hit : f32 = if t0 > t_min && t0 < t_max {
-            t0
-        } else {
+        if (t0 > t_max || t1 <= 0.0) {return false;}
+
+        // let mut t_hit : f32 = if t0 > t_min && t0 < t_max {
+        //     t0
+        // } else {
+        //     t1
+        // };
+
+        let mut t_hit : f32 = if t0 <= 0.0 {
             t1
+        } else {
+            t0
         };
 
-        if t_hit > t_min && t_hit < t_max {
+        if t_hit > t_max {
+            return false;
+        }
+
+        // if t_hit > t_min && t_hit < t_max {
+        {
             let mut hit = ray.point_at_parameter(t_hit);
-            let mut orig_hit = ray.point_at_parameter(t_hit) - self.centre;
+            let mut orig_hit = hit - self.centre;
 
-            let hit_rad = (orig_hit.x() * orig_hit.x() + orig_hit.y() * orig_hit.y()).sqrt();
-            hit.e[0] *= orig_hit.e[0] * self.radius / hit_rad + self.centre.e[0];
-            hit.e[1] *= orig_hit.e[1] * self.radius / hit_rad + self.centre.e[1];
+            let mut hit_rad = (orig_hit.x() * orig_hit.x() + orig_hit.y() * orig_hit.y()).sqrt();
+            // orig_hit.e[0] *= self.radius / hit_rad;
+            // orig_hit.e[1] *= self.radius / hit_rad;
 
-            let mut phi = hit.y().atan2(hit.x());
+            // hit.e[0] = orig_hit.e[0] + self.centre.e[0];
+            // hit.e[1] = orig_hit.e[1] + self.centre.e[1];
+
+            let mut phi = orig_hit.y().atan2(orig_hit.x());
             
             if (phi < 0.0) {
                 phi += 2.0 * f32::consts::PI;
             }
 
-            if (orig_hit.z() < oz_min || orig_hit.z() > oz_max || phi > self.phi_max) {
-                // if (t_hit == t1) {
-                //     return false;
-                // }
+            // if (orig_hit.z() < oz_min || orig_hit.z() > oz_max || phi > self.phi_max) {
+            if (orig_hit.z() < oz_min || orig_hit.z() > oz_max) {
+                if (t_hit == t1) {
+                    return false;
+                }
                 t_hit = t1;
 
-                // if t_hit > t_max {
-                //     return false;
-                // }
+                if t_hit > t_max {
+                    return false;
+                }
 
                 hit = ray.point_at_parameter(t_hit);
-                orig_hit = ray.point_at_parameter(t_hit) - self.centre;
+                orig_hit = hit - self.centre;
 
-                let hit_rad = (orig_hit.x() * orig_hit.x() + orig_hit.y() * orig_hit.y()).sqrt();
-                hit.e[0] *= self.radius / hit_rad;
-                hit.e[1] *= self.radius / hit_rad;
+                hit_rad = (orig_hit.x() * orig_hit.x() + orig_hit.y() * orig_hit.y()).sqrt();
+                // hit.e[0] *= self.radius / hit_rad;
+                // hit.e[1] *= self.radius / hit_rad;
 
-                hit.e[0] *= orig_hit.e[0] * self.radius / hit_rad + self.centre.e[0];
-                hit.e[1] *= orig_hit.e[1] * self.radius / hit_rad + self.centre.e[1];
+                // orig_hit.e[0] *= self.radius / hit_rad;
+                // orig_hit.e[1] *= self.radius / hit_rad;
 
-                let mut phi = hit.y().atan2(hit.x());
+                // hit.e[0] = orig_hit.e[0] + self.centre.e[0];
+                // hit.e[1] = orig_hit.e[1] + self.centre.e[1];
+
+                phi = orig_hit.y().atan2(orig_hit.x());
             
                 if (phi < 0.0) {
                     phi += 2.0 * f32::consts::PI;
@@ -230,18 +267,25 @@ impl Hitable for Cylinder {
                 // if (orig_hit.z() < oz_min || orig_hit.z() > oz_max || phi > self.phi_max) {
                 //     return false;
                 // }
+
+                if (orig_hit.z() < oz_min || orig_hit.z() > oz_max) {
+                    return false;
+                }
             }
 
             let u = phi / self.phi_max;
-            let v = (hit.z() - oz_min) / (oz_max - oz_min);
+            // let v = (hit.z() - oz_min) / (oz_max - oz_min);
+            let v = (orig_hit.z() - oz_min) / (oz_max - oz_min);
 
             // Vector3f dpdu(-self.phi_max * hit.y(), self.phi_max * hit.x(), 0);
             // Vector3f dpdv(0, 0, zMax - zMin);
 
-            let dpdu = Vec3 { e: [-self.phi_max * hit.y(), self.phi_max * hit.x(), 0.0]};
+            // let dpdu = Vec3 { e: [-self.phi_max * hit.y(), self.phi_max * hit.x(), 0.0]};
+            let dpdu = Vec3 { e: [-self.phi_max * orig_hit.y(), self.phi_max * orig_hit.x(), 0.0]};
             let dpdv = Vec3 { e: [0.0, 0.0, oz_max - oz_min]};
 
-            let d2Pduu = -self.phi_max * self.phi_max * Vec3 { e: [hit.x(), hit.y(), 0.0]};
+            // let d2Pduu = -self.phi_max * self.phi_max * Vec3 { e: [hit.x(), hit.y(), 0.0]};
+            let d2Pduu = -self.phi_max * self.phi_max * Vec3 { e: [orig_hit.x(), orig_hit.y(), 0.0]};
             let d2Pduv = Vec3 { e: [0.0, 0.0, 0.0]};
             let d2Pdvv = Vec3 { e: [0.0, 0.0, 0.0]};
 

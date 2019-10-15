@@ -41,7 +41,7 @@ fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
             material: Material::make_dummy_material(),
         };
 
-    if world.hit(ray, 0.001, 10000.0, &mut hit_rec) {
+    if world.hit(ray, 0.000, 100000.0, &mut hit_rec) {
         // if depth >= 50 {
         //     return Vec3 { e: [0.0, 0.0, 0.0]};
         // }
