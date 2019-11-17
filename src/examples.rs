@@ -55,6 +55,7 @@ impl HitList {
             ],
             moving_spheres: vec![],
             cylinders: vec![],
+            discs: vec![],
         }
     }
     pub fn blue_red_spheres() -> HitList {
@@ -78,6 +79,7 @@ impl HitList {
             ],
             moving_spheres: vec![],
             cylinders: vec![],
+            discs: vec![],
         }
     }
     pub fn cylinders() -> HitList {
@@ -123,6 +125,7 @@ impl HitList {
                     material: Material::make_dielectric(1.5)
                 },
             ],
+            discs: vec![],
         }
     }
     pub fn random_world(rng: &mut ThreadRng) -> HitList {
@@ -210,6 +213,7 @@ impl HitList {
             spheres: sphere_list,
             moving_spheres: moving_sphere_list,
             cylinders: vec![],
+            discs: vec![],
         }
     }
 }
@@ -281,6 +285,7 @@ pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) 
                 spheres: vec![],
                 moving_spheres: vec![],
                 cylinders: vec![],
+                discs: vec![],
             },
             Camera::create(
                 Vec3 { e: [ 0.0, 0.0,  0.0]},

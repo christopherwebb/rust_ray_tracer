@@ -53,6 +53,16 @@ pub struct Cylinder {
     pub material: Material,
 }
 
+#[derive(Copy, Clone)]
+pub struct Disc {
+    pub centre : Vec3,
+    pub radius: f32,
+    pub height: f32,
+    pub innerRadius: f32,
+    pub phiMax : f32,
+    pub material: Material,
+}
+
 impl Hitable for Sphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let oc : Vec3 = ray.origin() - &self.centre;
@@ -285,11 +295,49 @@ impl Hitable for Cylinder {
     }
 }
 
+impl Hitable for Disc {
+    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
+        if ray.b.z() == 0.0 {
+           return false;
+        }
+
+        let shape_hit = (self.height - ray.a.z()) / ray.b.z();
+        if shape_hit <= 0.0 || shape_hit >= t_max {
+            return false;
+        }
+
+        let hit = ray.point_at_parameter(shape_hit);
+        let dist2 = hit.x() * hit.x() + hit.y() * hit.y();
+
+        if dist2 > self.radius * self.radius || dist2 < self.innerRadius * self.innerRadius {
+            return false;
+        }
+
+        let mut phi = hit.y().atan2(hit.x());
+        if phi < 0.0 {
+            phi += 2.0 * f32::consts::PI;
+        }
+
+        if phi > self.phiMax {
+            return false;
+        }
+
+        rec.t = shape_hit;
+        rec.p = hit;
+        // rec.normal = N;
+        rec.normal = (&rec.p - &self.centre) / self.radius;
+        rec.normal = ray.a - &rec.p;
+        rec.material = self.material;
+        return true;
+    }
+}
+
 #[derive(Clone)]
 pub struct HitList {
     pub spheres : Vec<Sphere>,
     pub moving_spheres : Vec<MovingSphere>,
     pub cylinders : Vec<Cylinder>,
+    pub discs : Vec<Disc>,
 }
 
 impl Hitable for HitList {
