@@ -63,6 +63,14 @@ pub struct Disc {
     pub material: Material,
 }
 
+#[derive(Copy, Clone)]
+pub struct Cone {
+    pub centre : Vec3,
+    pub height : f32,
+    pub radius: f32,
+    pub material: Material,
+}
+
 impl Hitable for Sphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let oc : Vec3 = ray.origin() - &self.centre;
@@ -332,12 +340,25 @@ impl Hitable for Disc {
     }
 }
 
+impl Hitable for Cone {
+    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
+        // let oc : Vec3 = ray.origin() - &self.centre;
+
+        // let x_comp = self.height * x / self.radius;
+        // let y_comp = self.height * y / self.radius;
+        // let z_comp = (z - self.height)
+        // x_comp * x_comp + y_comp * y_comp - z_comp * z_comp = 0
+        return false;
+    }
+}
+
 #[derive(Clone)]
 pub struct HitList {
     pub spheres : Vec<Sphere>,
     pub moving_spheres : Vec<MovingSphere>,
     pub cylinders : Vec<Cylinder>,
     pub discs : Vec<Disc>,
+    pub cones : Vec<Cone>,
 }
 
 impl Hitable for HitList {
@@ -374,6 +395,17 @@ impl Hitable for HitList {
         }
 
         for hit_item in self.cylinders.iter() {
+            if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
+                hit_anything = true;
+                closest_so_far = hit_rec.t;
+                rec.t = hit_rec.t;
+                rec.p = hit_rec.p.clone();
+                rec.normal = hit_rec.normal.clone();
+                rec.material = hit_rec.material.clone();
+            }
+        }
+
+        for hit_item in self.cones.iter() {
             if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
                 hit_anything = true;
                 closest_so_far = hit_rec.t;

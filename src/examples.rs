@@ -56,6 +56,7 @@ impl HitList {
             moving_spheres: vec![],
             cylinders: vec![],
             discs: vec![],
+            cones: vec![],
         }
     }
     pub fn blue_red_spheres() -> HitList {
@@ -80,6 +81,7 @@ impl HitList {
             moving_spheres: vec![],
             cylinders: vec![],
             discs: vec![],
+            cones: vec![],
         }
     }
     pub fn cylinders() -> HitList {
@@ -126,6 +128,7 @@ impl HitList {
                 },
             ],
             discs: vec![],
+            cones: vec![],
         }
     }
     pub fn random_world(rng: &mut ThreadRng) -> HitList {
@@ -214,6 +217,7 @@ impl HitList {
             moving_spheres: moving_sphere_list,
             cylinders: vec![],
             discs: vec![],
+            cones: vec![],
         }
     }
 }
@@ -286,6 +290,7 @@ pub fn generate_example(example_name: String, rng: &mut ThreadRng, aspect: f32) 
                 moving_spheres: vec![],
                 cylinders: vec![],
                 discs: vec![],
+                cones: vec![],
             },
             Camera::create(
                 Vec3 { e: [ 0.0, 0.0,  0.0]},
