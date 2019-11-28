@@ -63,6 +63,122 @@ pub struct Disc {
     pub material: Material,
 }
 
+#[derive(Copy, Clone)]
+pub struct BoxShape {
+    pub corner_1 : Vec3,
+    pub corner_2 : Vec3,
+
+    pub side_1: RectXY,
+    pub side_2: RectXY,
+    pub side_3: RectXZ,
+    pub side_4: RectXZ,
+    pub side_5: RectYZ,
+    pub side_6: RectYZ,
+}
+
+impl BoxShape {
+    fn create(
+        centre : Vec3,
+        x_length : f32,
+        y_length : f32,
+        z_length : f32,
+        material: Material,
+    ) -> BoxShape {
+        let x0 = centre.x() - x_length / 2.0;
+        let x1 = centre.x() + x_length / 2.0;
+        let y0 = centre.y() - y_length / 2.0;
+        let y1 = centre.y() + y_length / 2.0;
+        let z0 = centre.z() - z_length / 2.0;
+        let z1 = centre.z() + z_length / 2.0;
+
+        BoxShape {
+            corner_1: Vec3 { e: [x0, y0, z0]},
+            corner_2: Vec3 { e: [x1, y1, z1]},
+            side_1: RectXY {
+                x0: x0,
+                x1: x1,
+                y0: y0,
+                y1: y1,
+                z: z0,
+                material: material,
+            },
+            side_2: RectXY {
+                x0: x0,
+                x1: x1,
+                y0: y0,
+                y1: y1,
+                z: z1,
+                material: material,
+            },
+            side_3: RectXZ {
+                x0: x0,
+                x1: x1,
+                z0: z0,
+                z1: z1,
+                y: y0,
+                material: material,
+            },
+            side_4: RectXZ {
+                x0: x0,
+                x1: x1,
+                z0: z0,
+                z1: z1,
+                y: y1,
+                material: material,
+            },
+            side_5: RectYZ {
+                y0: y0,
+                y1: y1,
+                z0: z0,
+                z1: z1,
+                x: x0,
+                material: material,
+            },
+            side_6: RectYZ {
+                y0: y0,
+                y1: y1,
+                z0: z0,
+                z1: z1,
+                x: x1,
+                material: material,
+            },
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct RectXY {
+    pub x0: f32,
+    pub x1: f32,
+    pub y0: f32,
+    pub y1: f32,
+    pub z: f32,
+
+    pub material: Material,
+}
+
+#[derive(Copy, Clone)]
+pub struct RectXZ {
+    pub x0: f32,
+    pub x1: f32,
+    pub z0: f32,
+    pub z1: f32,
+    pub y: f32,
+
+    pub material: Material,
+}
+
+#[derive(Copy, Clone)]
+pub struct RectYZ {
+    pub y0: f32,
+    pub y1: f32,
+    pub z0: f32,
+    pub z1: f32,
+    pub x: f32,
+
+    pub material: Material,
+}
+
 impl Hitable for Sphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let oc : Vec3 = ray.origin() - &self.centre;
@@ -332,12 +448,137 @@ impl Hitable for Disc {
     }
 }
 
+impl Hitable for BoxShape {
+    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
+        let mut updating_t_max = t_max;
+        let mut hit = false;
+        if self.side_1.hit(ray, t_min, updating_t_max, rec) {
+            hit = true;
+            updating_t_max = rec.t;
+        }
+        if self.side_2.hit(ray, t_min, updating_t_max, rec) {
+            hit = true;
+            updating_t_max = rec.t;
+        }
+        if self.side_3.hit(ray, t_min, updating_t_max, rec) {
+            hit = true;
+            updating_t_max = rec.t;
+        }
+        if self.side_4.hit(ray, t_min, updating_t_max, rec) {
+            hit = true;
+            updating_t_max = rec.t;
+        }
+        if self.side_5.hit(ray, t_min, updating_t_max, rec) {
+            hit = true;
+            updating_t_max = rec.t;
+        }
+        if self.side_6.hit(ray, t_min, updating_t_max, rec) {
+            hit = true;
+        }
+        return hit;
+    }
+}
+
+impl Hitable for RectXY {
+    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
+        if ray.b.z() == 0.0 {
+            return false;
+        }
+
+        let t_hit = (self.z - ray.a.z()) / ray.b.z();
+        if t_hit < t_min || t_hit > t_max {
+            return false;
+        }
+
+        let mut hit = ray.point_at_parameter(t_hit);
+
+        if hit.x() < self.x0 ||
+           hit.x() > self.x1 ||
+           hit.y() < self.y0 ||
+           hit.y() > self.y1 {
+            return false;
+        }
+
+        rec.t = t_hit;
+        rec.p = hit;
+        let z_normal = if ray.b.z() < 0.0 { 1.0 } else { -1.0 };
+        rec.normal = Vec3 { e: [0.0, 0.0, z_normal]};
+        rec.material = self.material;
+
+        true
+    }
+}
+
+impl Hitable for RectXZ {
+    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
+        if ray.b.y() == 0.0 {
+            return false;
+        }
+
+        let t_hit = (self.y - ray.a.y()) / ray.b.y();
+        if t_hit < t_min || t_hit > t_max {
+            return false;
+        }
+
+        let mut hit = ray.point_at_parameter(t_hit);
+
+        if hit.x() < self.x0 ||
+           hit.x() > self.x1 ||
+           hit.z() < self.z0 ||
+           hit.z() > self.z1 {
+            return false;
+        }
+
+        rec.t = t_hit;
+        rec.p = hit;
+        let y_normal = if ray.b.y() < 0.0 { 1.0 } else { -1.0 };
+        rec.normal = Vec3 { e: [0.0, y_normal, 0.0]};
+        rec.material = self.material;
+
+        true
+    }
+}
+
+impl Hitable for RectYZ {
+    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
+        if ray.b.x() == 0.0 {
+            return false;
+        }
+
+        let t_hit = (self.x - ray.a.x()) / ray.b.x();
+        if t_hit < t_min || t_hit > t_max {
+            return false;
+        }
+
+        let mut hit = ray.point_at_parameter(t_hit);
+
+        if hit.y() < self.y0 ||
+           hit.y() > self.y1 ||
+           hit.z() < self.z0 ||
+           hit.z() > self.z1 {
+            return false;
+        }
+
+        rec.t = t_hit;
+        rec.p = hit;
+        let x_normal = if ray.b.x() < 0.0 { 1.0 } else { -1.0 };
+        rec.normal = Vec3 { e: [x_normal, 0.0, 0.0]};
+        rec.material = self.material;
+
+        true
+    }
+}
+
 #[derive(Clone)]
 pub struct HitList {
     pub spheres : Vec<Sphere>,
     pub moving_spheres : Vec<MovingSphere>,
     pub cylinders : Vec<Cylinder>,
     pub discs : Vec<Disc>,
+    pub boxes : Vec<BoxShape>,
+    pub rect_xy : Vec<RectXY>,
+    pub rect_xz : Vec<RectXZ>,
+    pub rect_yz : Vec<RectYZ>,
 }
 
 impl Hitable for HitList {
@@ -374,6 +615,50 @@ impl Hitable for HitList {
         }
 
         for hit_item in self.cylinders.iter() {
+            if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
+                hit_anything = true;
+                closest_so_far = hit_rec.t;
+                rec.t = hit_rec.t;
+                rec.p = hit_rec.p.clone();
+                rec.normal = hit_rec.normal.clone();
+                rec.material = hit_rec.material.clone();
+            }
+        }
+
+        for hit_item in self.boxes.iter() {
+            if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
+                hit_anything = true;
+                closest_so_far = hit_rec.t;
+                rec.t = hit_rec.t;
+                rec.p = hit_rec.p.clone();
+                rec.normal = hit_rec.normal.clone();
+                rec.material = hit_rec.material.clone();
+            }
+        }
+
+        for hit_item in self.rect_xy.iter() {
+            if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
+                hit_anything = true;
+                closest_so_far = hit_rec.t;
+                rec.t = hit_rec.t;
+                rec.p = hit_rec.p.clone();
+                rec.normal = hit_rec.normal.clone();
+                rec.material = hit_rec.material.clone();
+            }
+        }
+
+        for hit_item in self.rect_xz.iter() {
+            if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
+                hit_anything = true;
+                closest_so_far = hit_rec.t;
+                rec.t = hit_rec.t;
+                rec.p = hit_rec.p.clone();
+                rec.normal = hit_rec.normal.clone();
+                rec.material = hit_rec.material.clone();
+            }
+        }
+
+        for hit_item in self.rect_yz.iter() {
             if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
                 hit_anything = true;
                 closest_so_far = hit_rec.t;
