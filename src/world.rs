@@ -1,4 +1,7 @@
 use std::f32;
+
+use serde::{Deserialize, Serialize};
+
 use crate::material::{
     Material,
     HitRecord
@@ -17,14 +20,14 @@ pub trait Hitable {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool;
 }
 
-#[derive(Copy, Clone)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct Sphere {
     pub centre : Vec3,
     pub radius: f32,
     pub material: Material,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct MovingSphere {
     pub centre0 : Vec3,
     pub time0 : f32,
@@ -43,7 +46,7 @@ impl MovingSphere {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct Cylinder {
     pub centre : Vec3,
     pub radius: f32,
@@ -285,7 +288,7 @@ impl Hitable for Cylinder {
     }
 }
 
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct HitList {
     pub spheres : Vec<Sphere>,
     pub moving_spheres : Vec<MovingSphere>,

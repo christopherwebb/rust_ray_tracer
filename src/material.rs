@@ -1,5 +1,7 @@
 use rand::Rng;
 
+use serde::{Deserialize, Serialize};
+
 use crate::vector::{
     Vec3,
     dot,
@@ -19,7 +21,7 @@ pub struct HitRecord {
     pub material: Material,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 enum MaterialType {
     Lambertian,
     Metal,
@@ -33,7 +35,7 @@ pub struct MaterialHit {
     // material : Material,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct Material {
     mat_type : MaterialType,
     albedo : Vec3,

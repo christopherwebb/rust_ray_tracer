@@ -2,6 +2,8 @@ use std::f32;
 use rand::thread_rng;
 use rand::Rng;
 
+use serde::{Deserialize, Serialize};
+
 use crate::vector::{
     Vec3,
     cross,
@@ -10,7 +12,7 @@ use crate::vector::{
 };
 use crate::ray::Ray;
 
-#[derive(Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct Camera {
     origin : Vec3,
     lower_left_corner : Vec3,

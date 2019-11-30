@@ -15,7 +15,9 @@ use std::clone::Clone;
 use rand::thread_rng;
 use rand::Rng;
 
-#[derive(Clone, Copy, Debug)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Vec3 {
     pub e : [f32; 3],
 }
