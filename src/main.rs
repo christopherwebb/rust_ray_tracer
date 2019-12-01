@@ -34,6 +34,10 @@ use crate::world::{
 
 mod scene;
 
+mod render;
+use crate::render::RenderResult;
+
+
 fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
     let mut hit_rec : HitRecord = HitRecord {
             t: 10000.0,
@@ -145,10 +149,17 @@ fn main() {
 
                         let ray = &arc_scene_n.camera.get_ray(u, v);
 
-                        col_sum += colour(&ray, &arc_scene_n.hitlist, 0);
+                        let colour_result = colour(&ray, &arc_scene_n.hitlist, 0);
+                        let result = RenderResult {
+                            x_coord: u,
+                            y_coord: v,
+                            time: ray.time,
+                            colour: colour_result,
+                        };
+                        tx_n.send(result).unwrap();
                     }
-                    let col : Vec3 = col_sum / cmp::max(1, to - from) as f32;
-                    tx_n.send(col).unwrap();
+                    // let col : Vec3 = col_sum / cmp::max(1, to - from) as f32;
+                    // tx_n.send(col).unwrap();
                 });
                 handles.push(handle);
             }
@@ -159,13 +170,25 @@ fn main() {
                 handle.join().unwrap();
             }
 
-            let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
-            let mut count = 0;
+            let mut results : Vec::<RenderResult> = vec![];
             for received in rx.iter() {
-                col_sum += received;
-                count += 1;
+                results.push(received);
             }
-            let col : Vec3 = col_sum / count as f32;
+
+            let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
+            for result in &results {
+                col_sum += result.colour;
+            }
+            
+            let col : Vec3 = col_sum / results.len() as f32;
+
+            // let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
+            // let mut count = 0;
+            // for received in rx.iter() {
+            //     col_sum += received;
+            //     count += 1;
+            // }
+            // let col : Vec3 = col_sum / count as f32;
 
             let ir = (255.99 * col.r()) as u64;
             let ig = (255.99 * col.g()) as u64;
