@@ -4,7 +4,7 @@ use crate::camera::Camera;
 use crate::world::HitList;
 
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Scene {
 	pub hitlist : HitList,
 	pub camera : Camera,

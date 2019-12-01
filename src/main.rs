@@ -1,11 +1,12 @@
 use std::cmp;
 use std::f32;
+use std::io::{self, Read};
+use std::sync::{Arc, mpsc};
+use std::thread;
+
 use rand::thread_rng;
 use rand::Rng;
 use clap::{Arg, App};
-
-use std::sync::{Arc, mpsc};
-use std::thread;
 
 mod material;
 use crate::material::{
@@ -31,7 +32,7 @@ use crate::world::{
     HitList,
 };
 
-mod examples;
+mod scene;
 
 fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
     let mut hit_rec : HitRecord = HitRecord {
@@ -96,13 +97,6 @@ fn main() {
                .value_name("INT")
                .help("Number of samples per pixel")
                .takes_value(true))
-        .arg(Arg::with_name("example")
-               .long("example")
-               .value_name("EXAMPLE")
-               .help("generate builtin example")
-               .possible_values(&["3balls", "blue_red", "final_weekend", "cylinders"])
-               .takes_value(true)
-               .conflicts_with("file"))
         .arg(Arg::with_name("file")
                 .short("f")
                 .long("file")
@@ -114,17 +108,17 @@ fn main() {
 
     let n_x : u32 = matches.value_of("width").unwrap().parse::<u32>().unwrap();
     let n_y : u32 = matches.value_of("height").unwrap().parse::<u32>().unwrap();
+
+    let mut buffer = String::new();
+    io::stdin().read_to_string(&mut buffer);
+    let input_scene: scene::Scene = serde_json::from_str(&buffer).unwrap();
+
     let aspect = (n_x as f32) / (n_y as f32);
 
     let aa_samples : u32 = matches.value_of("aa_samples").unwrap().parse::<u32>().unwrap();
     let aa_division : f32 = aa_samples as f32;
 
-    let mut rng = thread_rng();
-
-    let example = matches.value_of("example").unwrap().to_string();
-    let (world, cam) = examples::generate_example(example, &mut rng, aspect);
-
-    let arc_world = Arc::new(world);
+    let arc_scene = Arc::new(input_scene);
 
     println!("P3\n{} {}\n255", n_x, n_y);
     for y_coord in (0..n_y).rev() {
@@ -133,7 +127,7 @@ fn main() {
             let (tx, rx) = mpsc::channel();
 
             for thread in 0..NTHREADS {
-                let arc_world_n = Arc::clone(&arc_world);
+                let arc_scene_n = Arc::clone(&arc_scene);
                 let tx_n = mpsc::Sender::clone(&tx);
 
                 let handle = thread::spawn(move || {
@@ -149,9 +143,9 @@ fn main() {
                         let u: f32 = (rand_x + x_coord as f32) / n_x as f32;
                         let v: f32 = (rand_y + y_coord as f32) / n_y as f32;
 
-                        let ray = &cam.get_ray(u, v);
+                        let ray = &arc_scene_n.camera.get_ray(u, v);
 
-                        col_sum += colour(&ray, &arc_world_n, 0);
+                        col_sum += colour(&ray, &arc_scene_n.hitlist, 0);
                     }
                     let col : Vec3 = col_sum / cmp::max(1, to - from) as f32;
                     tx_n.send(col).unwrap();
