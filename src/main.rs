@@ -18,7 +18,6 @@ mod render;
 mod scene;
 mod shapes;
 mod vector;
-mod world;
 
 
 use crate::material::{
@@ -120,8 +119,6 @@ fn main() {
     let mut buffer = String::new();
     io::stdin().read_to_string(&mut buffer);
     let input_scene: scene::Scene = serde_json::from_str(&buffer).unwrap();
-
-    eprintln!("Sphere count {}", &input_scene.hitlist.spheres.len());
 
     let _aspect = (n_x as f32) / (n_y as f32);
 

@@ -4,5 +4,4 @@ pub mod ray;
 pub mod render;
 pub mod scene;
 pub mod vector;
-pub mod world;
 pub mod shapes;
