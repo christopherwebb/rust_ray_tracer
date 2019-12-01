@@ -124,7 +124,7 @@ fn main() {
 
     let arc_scene = Arc::new(input_scene);
 
-    println!("P3\n{} {}\n255", n_x, n_y);
+    let mut results : Vec::<RenderResult> = vec![];
     for y_coord in (0..n_y).rev() {
         for x_coord in 0..n_x {
             let mut handles = vec![];
@@ -151,15 +151,13 @@ fn main() {
 
                         let colour_result = colour(&ray, &arc_scene_n.hitlist, 0);
                         let result = RenderResult {
-                            x_coord: u,
-                            y_coord: v,
+                            x_coord: rand_x + x_coord as f32,
+                            y_coord: rand_y + y_coord as f32,
                             time: ray.time,
                             colour: colour_result,
                         };
                         tx_n.send(result).unwrap();
                     }
-                    // let col : Vec3 = col_sum / cmp::max(1, to - from) as f32;
-                    // tx_n.send(col).unwrap();
                 });
                 handles.push(handle);
             }
@@ -170,25 +168,25 @@ fn main() {
                 handle.join().unwrap();
             }
 
-            let mut results : Vec::<RenderResult> = vec![];
             for received in rx.iter() {
                 results.push(received);
             }
+        }
+    }
 
+    let mut sorted_results : Vec<Vec<Vec<&RenderResult>>> = vec![vec![vec![]; n_x as usize]; n_y as usize];
+    for result in &results {
+        sorted_results[(n_y as f32 - (result.y_coord + 1.0)) as usize][result.x_coord as usize].push(&result);
+    }
+
+    println!("P3\n{} {}\n255", n_x, n_y);
+    for y_results in sorted_results {
+        for pixel_results in y_results {
             let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
-            for result in &results {
+            for result in &pixel_results {
                 col_sum += result.colour;
             }
-            
-            let col : Vec3 = col_sum / results.len() as f32;
-
-            // let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
-            // let mut count = 0;
-            // for received in rx.iter() {
-            //     col_sum += received;
-            //     count += 1;
-            // }
-            // let col : Vec3 = col_sum / count as f32;
+            let col : Vec3 = col_sum / pixel_results.len() as f32;
 
             let ir = (255.99 * col.r()) as u64;
             let ig = (255.99 * col.g()) as u64;
