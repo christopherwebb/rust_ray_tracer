@@ -7,15 +7,12 @@ use serde_json::{Result, Value};
 extern crate rust_ray_tracing;
 
 use rust_ray_tracing::camera::Camera;
-use rust_ray_tracing::scene::Scene;
+use rust_ray_tracing::scene::{HitList, Scene};
 use rust_ray_tracing::material::Material;
 use rust_ray_tracing::vector::Vec3;
-use rust_ray_tracing::world::{
-    HitList,
-    Sphere,
-    MovingSphere,
-    Cylinder,
-};
+use rust_ray_tracing::shapes::base::Hitable;
+use rust_ray_tracing::shapes::cylinder::Cylinder;
+use rust_ray_tracing::shapes::sphere::{Sphere, MovingSphere};
 
 
 fn three_spheres_on_world(aspect : f32) -> Scene {

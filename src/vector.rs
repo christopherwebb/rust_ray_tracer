@@ -9,9 +9,7 @@ use std::ops::{
     Div,
     DivAssign
 };
-// use std::option;
 use std::clone::Clone;
-// use std::marker::Copy;
 use rand::thread_rng;
 use rand::Rng;
 

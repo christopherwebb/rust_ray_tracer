@@ -1,4 +1,3 @@
-use std::cmp;
 use std::f32;
 use std::io::{self, Read};
 use std::sync::{Arc, mpsc};
@@ -12,34 +11,29 @@ use clap::{Arg, App};
 use indicatif::{HumanDuration, ProgressBar, ProgressStyle};
 use console::style;
 
+mod camera;
 mod material;
+mod ray;
+mod render;
+mod scene;
+mod shapes;
+mod vector;
+mod world;
+
+
 use crate::material::{
     Material,
     MaterialHit,
     HitRecord
 };
-
-mod ray;
 use crate::ray::Ray;
-
-mod vector;
+use crate::render::RenderResult;
+use crate::shapes::base::Hitable;
+use crate::scene::HitList;
 use crate::vector::{
     Vec3,
     unit_vector,
 };
-
-mod camera;
-
-mod world;
-use crate::world::{
-    Hitable,
-    HitList,
-};
-
-mod scene;
-
-mod render;
-use crate::render::RenderResult;
 
 
 fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
@@ -127,10 +121,11 @@ fn main() {
     io::stdin().read_to_string(&mut buffer);
     let input_scene: scene::Scene = serde_json::from_str(&buffer).unwrap();
 
-    let aspect = (n_x as f32) / (n_y as f32);
+    eprintln!("Sphere count {}", &input_scene.hitlist.spheres.len());
+
+    let _aspect = (n_x as f32) / (n_y as f32);
 
     let aa_samples : u32 = matches.value_of("aa_samples").unwrap().parse::<u32>().unwrap();
-    let aa_division : f32 = aa_samples as f32;
 
     let arc_scene = Arc::new(input_scene);
 
@@ -144,7 +139,6 @@ fn main() {
         .template("{spinner:.green} {elapsed_precise} {bar:40.cyan/blue} {pos}/{len}")
     );
 
-    let mut results : Vec::<RenderResult> = vec![];
     for y_coord in (0..n_y).rev() {
         for x_coord in 0..n_x {
             let mut handles = vec![];
@@ -156,8 +150,6 @@ fn main() {
 
                 let handle = thread::spawn(move || {
                     let mut rng = thread_rng();
-
-                    let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
 
                     let (from, to) = sample_range(thread, NTHREADS, aa_samples);
                     for _ in from..to {

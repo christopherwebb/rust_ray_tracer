@@ -1,14 +1,12 @@
 use std::f32;
-
 use serde::{Deserialize, Serialize};
 
 use crate::material::{
     Material,
     HitRecord
 };
-
 use crate::ray::Ray;
-
+use crate::shapes::base::{solve_quadratic, Hitable};
 use crate::vector::{
     Vec3,
     dot,
@@ -16,35 +14,6 @@ use crate::vector::{
     cross,
 };
 
-pub trait Hitable {
-    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool;
-}
-
-#[derive(Serialize, Deserialize, Copy, Clone)]
-pub struct Sphere {
-    pub centre : Vec3,
-    pub radius: f32,
-    pub material: Material,
-}
-
-#[derive(Serialize, Deserialize, Copy, Clone)]
-pub struct MovingSphere {
-    pub centre0 : Vec3,
-    pub time0 : f32,
-
-    pub centre1 : Vec3,
-    pub time1 : f32,
-
-    pub radius: f32,
-    pub material: Material,
-}
-
-impl MovingSphere {
-    fn centre(&self, time: f32) -> Vec3 {
-        let time_fac = (time - self.time0) / (self.time1 - self.time0);
-        self.centre0 + time_fac * (self.centre1 - self.centre0)
-    }
-}
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct Cylinder {
@@ -54,95 +23,6 @@ pub struct Cylinder {
     pub zMin: f32,
     pub zMax: f32,
     pub material: Material,
-}
-
-impl Hitable for Sphere {
-    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc : Vec3 = ray.origin() - &self.centre;
-
-        let a : f32 = dot(&ray.direction(), &ray.direction());
-        let b : f32 = dot(&oc, &ray.direction());
-        let c : f32 = dot(&oc, &oc) - self.radius * self.radius;
-
-        let discriminant : f32 = b * b - a * c;
-
-        if discriminant <= 0.0 {
-            return false;
-        }
-
-        let temp : f32 = (-b - (b * b - a * c).sqrt()) / a;
-        if temp > t_min && temp < t_max {
-            rec.t = temp;
-            rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&rec.p - &self.centre) / self.radius;
-            rec.material = self.material;
-            return true;
-        }
-
-        let temp2 : f32 = (-b + (b * b - a * c).sqrt()) / a;
-        if temp2 > t_min && temp2 < t_max {
-            rec.t = temp2;
-            rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&rec.p - &self.centre) / self.radius;
-            rec.material = self.material;
-            return true;
-        }
-
-        false
-    }
-}
-
-impl Hitable for MovingSphere {
-    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc : Vec3 = ray.origin() - &self.centre(ray.time);
-
-        let a : f32 = dot(&ray.direction(), &ray.direction());
-        let b : f32 = dot(&oc, &ray.direction());
-        let c : f32 = dot(&oc, &oc) - self.radius * self.radius;
-
-        let discriminant : f32 = b * b - a * c;
-
-        if discriminant <= 0.0 {
-            return false;
-        }
-
-        let temp : f32 = (-b - (b * b - a * c).sqrt()) / a;
-        if temp > t_min && temp < t_max {
-            rec.t = temp;
-            rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&rec.p - &self.centre(ray.time)) / self.radius;
-            rec.material = self.material;
-            return true;
-        }
-
-        let temp2 : f32 = (-b + (b * b - a * c).sqrt()) / a;
-        if temp2 > t_min && temp2 < t_max {
-            rec.t = temp2;
-            rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&rec.p - &self.centre(ray.time)) / self.radius;
-            rec.material = self.material;
-            return true;
-        }
-
-        false
-    }
-}
-
-fn solve_quadratic(a: f32, b: f32, c: f32) -> (bool, f32, f32) {
-    let discriminant = b * b - 4.0 * a * c;
-
-    if discriminant < 0.0 {
-        return (false, 0.0, 0.0);
-    }
-
-    let t0 = -0.5 * (b + discriminant.sqrt()) / a;
-    let t1 = -0.5 * (b - discriminant.sqrt()) / a;
-
-    if t0 > t1 {
-        return (true, t1, t0);
-    } else {
-        return (true, t0, t1);
-    }
 }
 
 impl Hitable for Cylinder {
@@ -285,60 +165,5 @@ impl Hitable for Cylinder {
         // }
 
         false
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-pub struct HitList {
-    pub spheres : Vec<Sphere>,
-    pub moving_spheres : Vec<MovingSphere>,
-    pub cylinders : Vec<Cylinder>,
-}
-
-impl Hitable for HitList {
-    fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let mut hit_rec : HitRecord = HitRecord {
-            t: t_max,
-            p: Vec3 { e: [0.0, 0.0, 0.0]},
-            normal: Vec3 { e: [0.0, 0.0, 0.0]},
-            material: Material::make_dummy_material(),
-        };
-        let mut hit_anything : bool = false;
-        let mut closest_so_far : f32 = t_max;
-
-        for hit_item in self.spheres.iter() {
-            if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
-                hit_anything = true;
-                closest_so_far = hit_rec.t;
-                rec.t = hit_rec.t;
-                rec.p = hit_rec.p.clone();
-                rec.normal = hit_rec.normal.clone();
-                rec.material = hit_rec.material.clone();
-            }
-        }
-
-        for hit_item in self.moving_spheres.iter() {
-            if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
-                hit_anything = true;
-                closest_so_far = hit_rec.t;
-                rec.t = hit_rec.t;
-                rec.p = hit_rec.p.clone();
-                rec.normal = hit_rec.normal.clone();
-                rec.material = hit_rec.material.clone();
-            }
-        }
-
-        for hit_item in self.cylinders.iter() {
-            if hit_item.hit(ray, t_min, closest_so_far, &mut hit_rec) {
-                hit_anything = true;
-                closest_so_far = hit_rec.t;
-                rec.t = hit_rec.t;
-                rec.p = hit_rec.p.clone();
-                rec.normal = hit_rec.normal.clone();
-                rec.material = hit_rec.material.clone();
-            }
-        }
-
-        hit_anything
     }
 }
