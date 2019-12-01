@@ -9,6 +9,7 @@ use rand::Rng;
 use clap::{Arg, App};
 
 use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+use console::{style, Emoji};
 
 mod material;
 use crate::material::{
@@ -115,6 +116,10 @@ fn main() {
     let n_x : u32 = matches.value_of("width").unwrap().parse::<u32>().unwrap();
     let n_y : u32 = matches.value_of("height").unwrap().parse::<u32>().unwrap();
 
+    eprintln!(
+        "{} Parsing scene...",
+        style("[1/2]").bold().dim(),
+    );
     let mut buffer = String::new();
     io::stdin().read_to_string(&mut buffer);
     let input_scene: scene::Scene = serde_json::from_str(&buffer).unwrap();
@@ -126,13 +131,10 @@ fn main() {
 
     let arc_scene = Arc::new(input_scene);
 
-    // let m = MultiProgress::new();
-    // let sty = ProgressStyle::default_bar()
-    //     .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7}")
-    //     .progress_chars("##-");
-    // let pb = m.add(ProgressBar::new((n_y * n_x * aa_samples).into()));
-    // pb.set_style(sty.clone());
-
+    eprintln!(
+        "{} Rendering scene...",
+        style("[2/2]").bold().dim(),
+    );
     let pb = ProgressBar::new((n_y * n_x * aa_samples).into());
     pb.set_style(
         ProgressStyle::default_bar()
@@ -192,4 +194,7 @@ fn main() {
     }
 
     pb.finish_and_clear();
+    eprintln!(
+        "Scene done!",
+    );
 }
