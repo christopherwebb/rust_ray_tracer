@@ -8,6 +8,8 @@ use rand::thread_rng;
 use rand::Rng;
 use clap::{Arg, App};
 
+use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
+
 mod material;
 use crate::material::{
     Material,
@@ -124,6 +126,19 @@ fn main() {
 
     let arc_scene = Arc::new(input_scene);
 
+    // let m = MultiProgress::new();
+    // let sty = ProgressStyle::default_bar()
+    //     .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos:>7}/{len:7}")
+    //     .progress_chars("##-");
+    // let pb = m.add(ProgressBar::new((n_y * n_x * aa_samples).into()));
+    // pb.set_style(sty.clone());
+
+    let pb = ProgressBar::new((n_y * n_x * aa_samples).into());
+    pb.set_style(
+        ProgressStyle::default_bar()
+        .template("{spinner:.green} {elapsed_precise} {bar:40.cyan/blue} {pos}/{len}")
+    );
+
     let mut results : Vec::<RenderResult> = vec![];
     for y_coord in (0..n_y).rev() {
         for x_coord in 0..n_x {
@@ -169,9 +184,12 @@ fn main() {
             }
 
             for received in rx.iter() {
+                pb.inc(1);
                 let serialized = serde_json::to_string(&received).unwrap();
                 println!("{}", serialized);
             }
         }
     }
+
+    pb.finish_and_clear();
 }
