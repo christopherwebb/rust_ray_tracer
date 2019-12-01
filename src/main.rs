@@ -3,13 +3,14 @@ use std::f32;
 use std::io::{self, Read};
 use std::sync::{Arc, mpsc};
 use std::thread;
+use std::time::Instant;
 
 use rand::thread_rng;
 use rand::Rng;
 use clap::{Arg, App};
 
-use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
-use console::{style, Emoji};
+use indicatif::{HumanDuration, ProgressBar, ProgressStyle};
+use console::style;
 
 mod material;
 use crate::material::{
@@ -111,6 +112,8 @@ fn main() {
                 .help("Load from file (not yet implemented)"))
        .get_matches();
 
+    let started = Instant::now();
+
     let NTHREADS = num_cpus::get() as u32;
 
     let n_x : u32 = matches.value_of("width").unwrap().parse::<u32>().unwrap();
@@ -195,6 +198,7 @@ fn main() {
 
     pb.finish_and_clear();
     eprintln!(
-        "Scene done!",
+        "Scene done in {}!",
+        HumanDuration(started.elapsed()),
     );
 }
