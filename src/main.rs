@@ -169,30 +169,9 @@ fn main() {
             }
 
             for received in rx.iter() {
-                results.push(received);
+                let serialized = serde_json::to_string(&received).unwrap();
+                println!("{}", serialized);
             }
-        }
-    }
-
-    let mut sorted_results : Vec<Vec<Vec<&RenderResult>>> = vec![vec![vec![]; n_x as usize]; n_y as usize];
-    for result in &results {
-        sorted_results[(n_y as f32 - (result.y_coord + 1.0)) as usize][result.x_coord as usize].push(&result);
-    }
-
-    println!("P3\n{} {}\n255", n_x, n_y);
-    for y_results in sorted_results {
-        for pixel_results in y_results {
-            let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
-            for result in &pixel_results {
-                col_sum += result.colour;
-            }
-            let col : Vec3 = col_sum / pixel_results.len() as f32;
-
-            let ir = (255.99 * col.r()) as u64;
-            let ig = (255.99 * col.g()) as u64;
-            let ib = (255.99 * col.b()) as u64;
-
-            println!("{} {} {}", ir, ig, ib);
         }
     }
 }
