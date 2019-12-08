@@ -4,6 +4,7 @@ use rand::Rng;
 
 use serde::{Deserialize, Serialize};
 
+use crate::core::Point3f;
 use crate::vector::{
     Vec3,
     cross,
@@ -75,7 +76,7 @@ impl Camera {
         let time = self.time_0 + (self.time_1 - self.time_0) * rng.gen::<f64>() as f32;
 
         Ray {
-            a: self.origin.clone() + offset,
+            a: Point3f::from(&self.origin) + offset,
             b: &self.lower_left_corner + &(s * &self.horizontal) + t * &self.vertical - &self.origin - offset,
             time: time,
         }

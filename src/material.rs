@@ -11,6 +11,7 @@ use crate::vector::{
     refract,
 };
 
+use crate::core::Point3f;
 use crate::ray::Ray;
 
 #[derive(Clone)]
@@ -53,7 +54,7 @@ impl Material {
                     hit : true,
                     atten : self.albedo,
                     ray_out : Ray {
-                        a: hit.p,
+                        a: Point3f::from(&hit.p),
                         b: target - hit.p,
                         time: ray_in.time,
                     },
@@ -62,7 +63,7 @@ impl Material {
             MaterialType::Metal => {
                 let reflected : Vec3 = reflect(&unit_vector(&ray_in.direction()), &hit.normal);
                 let scattered : Ray = Ray {
-                    a: hit.p,
+                    a: Point3f::from(&hit.p),
                     b: &reflected + &(self.fuzz * rnd_in_unit_sphere()),
                     time: ray_in.time,
                 };
@@ -109,7 +110,7 @@ impl Material {
                         hit : true,
                         atten : atten,
                         ray_out : Ray {
-                            a: hit.p,
+                            a: Point3f::from(&hit.p),
                             b: ray,
                             time: ray_in.time,
                         },
@@ -119,7 +120,7 @@ impl Material {
                         hit : true,
                         atten : atten,
                         ray_out : Ray {
-                            a: hit.p,
+                            a: Point3f::from(&hit.p),
                             b: reflected,
                             time: ray_in.time,
                         },
