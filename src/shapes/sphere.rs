@@ -41,11 +41,11 @@ impl MovingSphere {
 
 impl Hitable for Sphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc : Vec3 = ray.origin() - &self.centre;
+        let oc = ray.origin() - (&self.centre);
 
         let a : f32 = dot(&ray.direction(), &ray.direction());
-        let b : f32 = dot(&oc, &ray.direction());
-        let c : f32 = dot(&oc, &oc) - self.radius * self.radius;
+        let b : f32 = oc.x * ray.direction().x() + oc.y * ray.direction().y() + oc.z * ray.direction().z();
+        let c : f32 = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z - self.radius * self.radius;
 
         let discriminant : f32 = b * b - a * c;
 
@@ -98,11 +98,11 @@ impl Hitable for Sphere {
 
 impl Hitable for MovingSphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc : Vec3 = ray.origin() - &self.centre(ray.time);
+        let oc = ray.origin() - &self.centre(ray.time);
 
         let a : f32 = dot(&ray.direction(), &ray.direction());
-        let b : f32 = dot(&oc, &ray.direction());
-        let c : f32 = dot(&oc, &oc) - self.radius * self.radius;
+        let b : f32 = oc.x * ray.direction().x() + oc.y * ray.direction().y() + oc.z * ray.direction().z();
+        let c : f32 = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z - self.radius * self.radius;
 
         let discriminant : f32 = b * b - a * c;
 

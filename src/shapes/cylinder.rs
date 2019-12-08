@@ -27,13 +27,13 @@ pub struct Cylinder {
 
 impl Hitable for Cylinder {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc : Vec3 = ray.origin() - &self.centre;
+        let oc = ray.origin() - &self.centre;
         let oz_min = self.zMin - &self.centre.z();
         let oz_max = self.zMax - &self.centre.z();
 
         let a : f32 = &ray.b.x() * &ray.b.x() + &ray.b.y() * &ray.b.y();
-        let b : f32 = 2.0 * (&oc.x() * &ray.b.x() + &oc.y() * &ray.b.y());
-        let c : f32 = &oc.x() * &oc.x() + &oc.y() * &oc.y() - self.radius * self.radius;
+        let b : f32 = 2.0 * (&oc.x * &ray.b.x() + &oc.y * &ray.b.y());
+        let c : f32 = &oc.x * &oc.x + &oc.y * &oc.y - self.radius * self.radius;
 
         let (result, t0, t1) = solve_quadratic(a, b, c);
         if !result {
