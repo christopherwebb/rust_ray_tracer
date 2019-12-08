@@ -18,6 +18,7 @@ mod render;
 mod scene;
 mod shapes;
 mod vector;
+mod core;
 
 
 use crate::material::{
