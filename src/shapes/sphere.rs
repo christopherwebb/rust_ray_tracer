@@ -1,6 +1,7 @@
 use std::f32;
 use serde::{Deserialize, Serialize};
 
+use crate::core::Point3f;
 use crate::material::{
     Material,
     HitRecord
@@ -15,17 +16,17 @@ use crate::shapes::base::{solve_quadratic, Hitable};
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct Sphere {
-    pub centre : Vec3,
+    pub centre: Point3f,
     pub radius: f32,
     pub material: Material,
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct MovingSphere {
-    pub centre0 : Vec3,
+    pub centre0: Point3f,
     pub time0 : f32,
 
-    pub centre1 : Vec3,
+    pub centre1: Point3f,
     pub time1 : f32,
 
     pub radius: f32,
@@ -33,7 +34,7 @@ pub struct MovingSphere {
 }
 
 impl MovingSphere {
-    fn centre(&self, time: f32) -> Vec3 {
+    fn centre(&self, time: f32) -> Point3f {
         let time_fac = (time - self.time0) / (self.time1 - self.time0);
         self.centre0 + time_fac * (self.centre1 - self.centre0)
     }
@@ -41,7 +42,7 @@ impl MovingSphere {
 
 impl Hitable for Sphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc = ray.origin() - (&self.centre);
+        let oc : Point3f = ray.origin() - (Vec3::from(&self.centre));
 
         let a : f32 = dot(&ray.direction(), &ray.direction());
         let b : f32 = oc.x * ray.direction().x() + oc.y * ray.direction().y() + oc.z * ray.direction().z();
@@ -78,7 +79,7 @@ impl Hitable for Sphere {
         if temp > t_min && temp < t_max {
             rec.t = temp;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&rec.p - &self.centre) / self.radius;
+            rec.normal = (&Point3f::from(&rec.p) - &self.centre) / self.radius;
             rec.material = self.material;
             return true;
         }
@@ -87,7 +88,7 @@ impl Hitable for Sphere {
         if temp2 > t_min && temp2 < t_max {
             rec.t = temp2;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&rec.p - &self.centre) / self.radius;
+            rec.normal = (&Point3f::from(&rec.p) - &self.centre) / self.radius;
             rec.material = self.material;
             return true;
         }
@@ -98,7 +99,7 @@ impl Hitable for Sphere {
 
 impl Hitable for MovingSphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc = ray.origin() - &self.centre(ray.time);
+        let oc : Point3f = ray.origin() - Vec3::from(&self.centre(ray.time));
 
         let a : f32 = dot(&ray.direction(), &ray.direction());
         let b : f32 = oc.x * ray.direction().x() + oc.y * ray.direction().y() + oc.z * ray.direction().z();
@@ -114,7 +115,7 @@ impl Hitable for MovingSphere {
         if temp > t_min && temp < t_max {
             rec.t = temp;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&rec.p - &self.centre(ray.time)) / self.radius;
+            rec.normal = (&Point3f::from(&rec.p) - &self.centre(ray.time)) / self.radius;
             rec.material = self.material;
             return true;
         }
@@ -123,7 +124,7 @@ impl Hitable for MovingSphere {
         if temp2 > t_min && temp2 < t_max {
             rec.t = temp2;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&rec.p - &self.centre(ray.time)) / self.radius;
+            rec.normal = (&Point3f::from(&rec.p) - &self.centre(ray.time)) / self.radius;
             rec.material = self.material;
             return true;
         }

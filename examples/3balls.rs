@@ -6,6 +6,7 @@ use serde_json::{Result, Value};
 
 extern crate rust_ray_tracing;
 
+use rust_ray_tracing::core::Point3f;
 use rust_ray_tracing::camera::Camera;
 use rust_ray_tracing::scene::{HitList, Scene};
 use rust_ray_tracing::material::Material;
@@ -31,21 +32,21 @@ fn three_spheres_on_world(aspect : f32) -> Scene {
     let hitlist = HitList {
         spheres: vec![
             Sphere {
-                centre: Vec3 { e: [0.0, 0.0, -1.0]},
+                centre: Point3f { x: 0.0, y: 0.0, z: -1.0},
                 radius: 0.5,
                 material: Material::make_lambertian(
                     Vec3 { e: [0.1, 0.2, 0.5]},
                 )
             },
             Sphere {
-                centre: Vec3 { e: [0.0, -100.5, -1.0]},
+                centre: Point3f { x: 0.0, y: -100.5, z: -1.0},
                 radius: 100.0,
                 material: Material::make_lambertian(
                     Vec3 { e: [0.8, 0.8, 0.0]},
                 )
             },
             Sphere {
-                centre: Vec3 { e: [1.0, 0.0, -1.0]},
+                centre: Point3f { x: 1.0, y: 0.0, z: -1.0},
                 radius: 0.5,
                 material: Material::make_metal(
                     Vec3 { e: [0.8, 0.6, 0.2]},
@@ -53,12 +54,12 @@ fn three_spheres_on_world(aspect : f32) -> Scene {
                 )
             },
             Sphere {
-                centre: Vec3 { e: [-1.0, 0.0, -1.0]},
+                centre: Point3f { x: -1.0, y: 0.0, z: -1.0},
                 radius: 0.5,
                 material: Material::make_dielectric(1.5)
             },
             Sphere {
-                centre: Vec3 { e: [-1.0, 0.0, -1.0]},
+                centre: Point3f { x: -1.0, y: 0.0, z: -1.0},
                 radius: -0.45,
                 material: Material::make_dielectric(1.5)
             },

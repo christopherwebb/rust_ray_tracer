@@ -6,6 +6,7 @@ use serde_json::{Result, Value};
 
 extern crate rust_ray_tracing;
 
+use rust_ray_tracing::core::Point3f;
 use rust_ray_tracing::camera::Camera;
 use rust_ray_tracing::scene::{HitList, Scene};
 use rust_ray_tracing::material::Material;

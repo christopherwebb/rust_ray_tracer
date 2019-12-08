@@ -51,6 +51,14 @@ impl Point3T<f32> {
     pub fn squared_distance(a: &Point3T<f32>, b: &Point3T<f32>) -> f32 {
         (a - b).squared_length()
     }
+
+    pub fn length(&self) -> f32 {
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+    }
+
+    pub fn squared_length(&self) -> f32 {
+        self.x * self.x + self.y * self.y + self.z * self.z
+    }
 }
 
 impl<T> From<Point3T<T>> for Point2T<T> {
@@ -85,6 +93,12 @@ impl From<Point2i> for Point2f {
 
 impl From<Point3f> for Vec3 {
     fn from(from: Point3f) -> Self {
+        Vec3 { e: [ from.x, from.y, from.z ]}
+    }
+}
+
+impl From<&Point3f> for Vec3 {
+    fn from(from: &Point3f) -> Self {
         Vec3 { e: [ from.x, from.y, from.z ]}
     }
 }

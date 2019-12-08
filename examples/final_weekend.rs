@@ -8,6 +8,7 @@ use serde_json::{Result, Value};
 
 extern crate rust_ray_tracing;
 
+use rust_ray_tracing::core::Point3f;
 use rust_ray_tracing::camera::Camera;
 use rust_ray_tracing::scene::{HitList, Scene};
 use rust_ray_tracing::material::Material;
@@ -41,7 +42,7 @@ fn final_weekend(aspect : f32) -> Scene {
     let mut moving_sphere_list = vec![];
 
     sphere_list.push(Sphere {
-        centre: Vec3 { e: [0.0, -1000.0, 0.0]},
+        centre: Point3f { x: 0.0, y: -1000.0, z: 0.0},
         radius: 1000.0,
         material: Material::make_lambertian(
             Vec3 { e: [0.5, 0.5, 0.5]},
@@ -49,19 +50,19 @@ fn final_weekend(aspect : f32) -> Scene {
     });
 
     sphere_list.push(Sphere {
-        centre: Vec3 { e: [0.0, 1.0, 0.0]},
+        centre: Point3f { x: 0.0, y: 1.0, z: 0.0},
         radius: large_radius,
         material: Material::make_dielectric(1.5)
     });
     sphere_list.push(Sphere {
-        centre: Vec3 { e: [-4.0, 1.0, 0.0]},
+        centre: Point3f { x: -4.0, y: 1.0, z: 0.0},
         radius: large_radius,
         material: Material::make_lambertian(
             Vec3 { e: [0.4, 0.2, 0.1]},
         )
     });
     sphere_list.push(Sphere {
-        centre: Vec3 { e: [4.0, 1.0, 0.0]},
+        centre: Point3f { x: 4.0, y: 1.0, z: 0.0},
         radius: large_radius,
         material: Material::make_metal(
             Vec3 { e: [0.7, 0.6, 0.5]},
@@ -74,11 +75,11 @@ fn final_weekend(aspect : f32) -> Scene {
     for a in -11..11 {
         for b in -11..11 {
             let chosen_mat = rng.gen::<f64>();
-            let centre = Vec3 { e: [
-                a as f32 + 0.9 * rng.gen::<f64>() as f32,
-                small_radius,
-                b as f32 + 0.9 * rng.gen::<f64>() as f32,
-            ]};
+            let centre = Point3f {
+                x: a as f32 + 0.9 * rng.gen::<f64>() as f32,
+                y: small_radius,
+                z: b as f32 + 0.9 * rng.gen::<f64>() as f32,
+            };
 
             if (centre - distance_filter).length() > 0.9 {
                 match chosen_mat {
