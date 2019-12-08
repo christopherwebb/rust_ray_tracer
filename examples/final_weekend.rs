@@ -19,10 +19,10 @@ use rust_ray_tracing::shapes::sphere::{Sphere, MovingSphere};
 
 
 fn final_weekend(aspect : f32) -> Scene {
-	let mut rng = thread_rng();
+    let mut rng = thread_rng();
 
-	let look_from = Vec3 { e: [ 13.0, 2.0, 3.0]};
-    let look_at = Vec3 { e: [ 0.0, 0.0, 0.0]};
+    let look_from = Point3f { x: 13.0, y: 2.0, z: 3.0 };
+    let look_at = Point3f   { x:  0.0, y: 0.0, z: 0.0 };
 
     let camera = Camera::create(
         look_from,

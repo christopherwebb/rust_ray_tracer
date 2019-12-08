@@ -18,8 +18,8 @@ use rust_ray_tracing::shapes::sphere::{Sphere, MovingSphere};
 
 fn cylinders(aspect : f32) -> Scene {
     let camera = Camera::create(
-        Vec3 { e: [ 1.5, 1.0,  1.5]},
-        Vec3 { e: [ 0.0, 0.0, 0.0]},
+        Point3f { x: 1.5, y: 1.0, z: 1.5 },
+        Point3f { x: 0.0, y: 0.0, z: 0.0 },
         Vec3 { e: [ 0.0, 1.0,  0.0]},
         90.0,
         aspect,

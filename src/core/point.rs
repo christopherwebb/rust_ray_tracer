@@ -167,10 +167,34 @@ impl Sub for Point3f {
     }
 }
 
+impl Sub<&Point3f> for Point3f {
+    type Output = Vec3;
+
+    fn sub(self, _rhs: &Point3f) -> Vec3 {
+        Vec3 { e: [
+            self.x - _rhs.x,
+            self.y - _rhs.y,
+            self.z - _rhs.z,
+        ]}
+    }
+}
+
 impl Sub for &Point3f {
     type Output = Vec3;
 
     fn sub(self, _rhs: &Point3f) -> Vec3 {
+        Vec3 { e: [
+            self.x - _rhs.x,
+            self.y - _rhs.y,
+            self.z - _rhs.z,
+        ]}
+    }
+}
+
+impl Sub<Point3f> for &Point3f {
+    type Output = Vec3;
+
+    fn sub(self, _rhs: Point3f) -> Vec3 {
         Vec3 { e: [
             self.x - _rhs.x,
             self.y - _rhs.y,

@@ -18,8 +18,8 @@ use rust_ray_tracing::shapes::sphere::{Sphere, MovingSphere};
 
 fn blue_red_spheres(aspect : f32) -> Scene {
     let camera = Camera::create(
-        Vec3 { e: [-2.0, 2.0,  1.0]},
-        Vec3 { e: [ 0.0, 0.0, -1.0]},
+        Point3f { x: -2.0, y: 2.0, z:  1.0 },
+        Point3f { x:  0.0, y: 0.0, z: -1.0 },
         Vec3 { e: [ 0.0, 1.0,  0.0]},
         45.0,
         aspect,

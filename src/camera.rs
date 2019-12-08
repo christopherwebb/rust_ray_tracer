@@ -15,8 +15,8 @@ use crate::ray::Ray;
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct Camera {
-    origin : Vec3,
-    lower_left_corner : Vec3,
+    origin : Point3f,
+    lower_left_corner : Point3f,
     horizontal : Vec3,
     vertical : Vec3,
     u : Vec3,
@@ -29,8 +29,8 @@ pub struct Camera {
 
 impl Camera {
     pub fn create(
-        look_from : Vec3,
-        look_at : Vec3,
+        look_from : Point3f,
+        look_at : Point3f,
         up : Vec3,
         fvov : f32,
         aspect : f32,
@@ -68,6 +68,7 @@ impl Camera {
 			time_1: time_1,
         }
     }
+
     pub fn get_ray(self, s: f32, t: f32) -> Ray {
         let rd = self.lens_radius * rnd_in_unit_disc();
         let offset = self.u * rd.x() + self.v * rd.y();
@@ -76,7 +77,7 @@ impl Camera {
         let time = self.time_0 + (self.time_1 - self.time_0) * rng.gen::<f64>() as f32;
 
         Ray {
-            a: Point3f::from(&self.origin) + offset,
+            a: &self.origin + &offset,
             b: &self.lower_left_corner + &(s * &self.horizontal) + t * &self.vertical - &self.origin - offset,
             time: time,
         }
