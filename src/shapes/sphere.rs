@@ -79,7 +79,7 @@ impl Hitable for Sphere {
         if temp > t_min && temp < t_max {
             rec.t = temp;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&Point3f::from(&rec.p) - &self.centre) / self.radius;
+            rec.normal = (&rec.p - &self.centre) / self.radius;
             rec.material = self.material;
             return true;
         }
@@ -88,7 +88,7 @@ impl Hitable for Sphere {
         if temp2 > t_min && temp2 < t_max {
             rec.t = temp2;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&Point3f::from(&rec.p) - &self.centre) / self.radius;
+            rec.normal = (&rec.p - &self.centre) / self.radius;
             rec.material = self.material;
             return true;
         }
@@ -115,7 +115,7 @@ impl Hitable for MovingSphere {
         if temp > t_min && temp < t_max {
             rec.t = temp;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&Point3f::from(&rec.p) - &self.centre(ray.time)) / self.radius;
+            rec.normal = (&rec.p - &self.centre(ray.time)) / self.radius;
             rec.material = self.material;
             return true;
         }
@@ -124,7 +124,7 @@ impl Hitable for MovingSphere {
         if temp2 > t_min && temp2 < t_max {
             rec.t = temp2;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = (&Point3f::from(&rec.p) - &self.centre(ray.time)) / self.radius;
+            rec.normal = (&rec.p - &self.centre(ray.time)) / self.radius;
             rec.material = self.material;
             return true;
         }

@@ -1,5 +1,6 @@
-use crate::vector::Vec3;
 use crate::core::Point3f;
+use crate::vector::Vec3;
+
 
 pub struct Ray {
     pub a : Point3f,

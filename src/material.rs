@@ -2,6 +2,7 @@ use rand::Rng;
 
 use serde::{Deserialize, Serialize};
 
+use crate::core::Point3f;
 use crate::vector::{
     Vec3,
     dot,
@@ -11,13 +12,13 @@ use crate::vector::{
     refract,
 };
 
-use crate::core::Point3f;
 use crate::ray::Ray;
+
 
 #[derive(Clone)]
 pub struct HitRecord {
     pub t : f32,
-    pub p : Vec3,
+    pub p : Point3f,
     pub normal : Vec3,
     pub material: Material,
 }
@@ -48,13 +49,13 @@ impl Material {
     pub fn scatter(self, ray_in: &Ray, hit: &HitRecord) -> MaterialHit {
         match self.mat_type {
             MaterialType::Lambertian => {
-                let target : Vec3 = hit.p + hit.normal + rnd_in_unit_sphere();
+                let target = hit.p + hit.normal + rnd_in_unit_sphere();
 
                 MaterialHit {
                     hit : true,
                     atten : self.albedo,
                     ray_out : Ray {
-                        a: Point3f::from(&hit.p),
+                        a: hit.p,
                         b: target - hit.p,
                         time: ray_in.time,
                     },
@@ -63,7 +64,7 @@ impl Material {
             MaterialType::Metal => {
                 let reflected : Vec3 = reflect(&unit_vector(&ray_in.direction()), &hit.normal);
                 let scattered : Ray = Ray {
-                    a: Point3f::from(&hit.p),
+                    a: hit.p,
                     b: &reflected + &(self.fuzz * rnd_in_unit_sphere()),
                     time: ray_in.time,
                 };
@@ -110,7 +111,7 @@ impl Material {
                         hit : true,
                         atten : atten,
                         ray_out : Ray {
-                            a: Point3f::from(&hit.p),
+                            a: hit.p,
                             b: ray,
                             time: ray_in.time,
                         },
@@ -120,7 +121,7 @@ impl Material {
                         hit : true,
                         atten : atten,
                         ray_out : Ray {
-                            a: Point3f::from(&hit.p),
+                            a: hit.p,
                             b: reflected,
                             time: ray_in.time,
                         },
