@@ -1,6 +1,7 @@
 use std::f32;
 use serde::{Deserialize, Serialize};
 
+use crate::core::Point3f;
 use crate::material::{
     Material,
     HitRecord
@@ -17,7 +18,7 @@ use crate::vector::{
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct Cylinder {
-    pub centre : Vec3,
+    pub centre : Point3f,
     pub radius: f32,
     pub phi_max: f32,
     pub zMin: f32,
@@ -27,9 +28,10 @@ pub struct Cylinder {
 
 impl Hitable for Cylinder {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc = ray.origin() - &self.centre;
-        let oz_min = self.zMin - &self.centre.z();
-        let oz_max = self.zMax - &self.centre.z();
+        let centre_vec = Vec3::from(&self.centre);
+        let oc = ray.origin() - &centre_vec;
+        let oz_min = self.zMin - &self.centre.z;
+        let oz_max = self.zMax - &self.centre.z;
 
         let a : f32 = &ray.b.x() * &ray.b.x() + &ray.b.y() * &ray.b.y();
         let b : f32 = 2.0 * (&oc.x * &ray.b.x() + &oc.y * &ray.b.y());
@@ -61,7 +63,7 @@ impl Hitable for Cylinder {
         if t_hit > t_min && t_hit < t_max {
         // {
             let mut hit = ray.point_at_parameter(t_hit);
-            let mut orig_hit = hit - self.centre;
+            let mut orig_hit = hit - &centre_vec;
 
             let mut hit_rad = (orig_hit.x() * orig_hit.x() + orig_hit.y() * orig_hit.y()).sqrt();
             // orig_hit.e[0] *= self.radius / hit_rad;
@@ -88,7 +90,7 @@ impl Hitable for Cylinder {
                 }
 
                 hit = ray.point_at_parameter(t_hit);
-                orig_hit = hit - self.centre;
+                orig_hit = hit - &centre_vec;
 
                 hit_rad = (orig_hit.x() * orig_hit.x() + orig_hit.y() * orig_hit.y()).sqrt();
                 // hit.e[0] *= self.radius / hit_rad;

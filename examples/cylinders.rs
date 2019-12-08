@@ -34,7 +34,7 @@ fn cylinders(aspect : f32) -> Scene {
         moving_spheres: vec![],
         cylinders: vec![
             Cylinder {
-                centre: Vec3 { e: [1.0, 0.0, -1.0]},
+                centre: Point3f { x: 1.0, y: 0.0, z: -1.0},
                 radius: 0.5,
                 phi_max: 2.0 * f32::consts::PI,
                 zMin: -0.25,
@@ -44,7 +44,7 @@ fn cylinders(aspect : f32) -> Scene {
                 )
             },
             Cylinder {
-                centre: Vec3 { e: [0.0, 0.0, -1.0]},
+                centre: Point3f { x: 0.0, y: 0.0, z: -1.0},
                 radius: 0.5,
                 phi_max: 2.0 * f32::consts::PI,
                 zMin: -1.0,
@@ -55,7 +55,7 @@ fn cylinders(aspect : f32) -> Scene {
                 )
             },
             Cylinder {
-                centre: Vec3 { e: [-1.0, 0.0, -1.0]},
+                centre: Point3f { x: -1.0, y: 0.0, z: -1.0},
                 radius: 0.5,
                 phi_max: 2.0 * f32::consts::PI,
                 zMin: -0.5,
@@ -63,7 +63,7 @@ fn cylinders(aspect : f32) -> Scene {
                 material: Material::make_dielectric(1.5)
             },
             Cylinder {
-                centre: Vec3 { e: [-1.0, 0.0, -1.0]},
+                centre: Point3f { x: -1.0, y: 0.0, z: -1.0},
                 radius: -0.45,
                 phi_max: 2.0 * f32::consts::PI,
                 zMin: -0.45,
