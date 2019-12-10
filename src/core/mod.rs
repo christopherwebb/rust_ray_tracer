@@ -12,4 +12,6 @@ pub use self::vector::{
     Vector2i,
     Vector3f,
     Vector3i,
+    cross,
+    dot,
 };

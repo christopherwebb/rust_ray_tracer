@@ -13,6 +13,7 @@ use std::clone::Clone;
 use serde::{Deserialize, Serialize};
 
 use crate::vector::Vec3;
+use crate::core::Point3f;
 
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
@@ -189,8 +190,51 @@ impl DivAssign<f32> for Vector3f {
 }
 
 
+impl From<Point3f> for Vector3f {
+    fn from(from: Point3f) -> Self {
+        Vector3f {x: from.x, y: from.y, z: from.z}
+    }
+}
 
 
+impl From<&Point3f> for Vector3f {
+    fn from(from: &Point3f) -> Self {
+        Vector3f {x: from.x, y: from.y, z: from.z}
+    }
+}
+
+
+impl From<Vector3f> for Vec3 {
+    fn from(from: Vector3f) -> Self {
+        Vec3 { e: [ from.x, from.y, from.z ]}
+    }
+}
+
+impl From<&Vector3f> for Vec3 {
+    fn from(from: &Vector3f) -> Self {
+        Vec3 { e: [ from.x, from.y, from.z ]}
+    }
+}
+
+impl From<Vec3> for Vector3f {
+    fn from(from: Vec3) -> Self {
+        Vector3f {
+            x: from.x(),
+            y: from.y(),
+            z: from.z(),
+        }
+    }
+}
+
+impl From<&Vec3> for Vector3f {
+    fn from(from: &Vec3) -> Self {
+        Vector3f {
+            x: from.x(),
+            y: from.y(),
+            z: from.z(),
+        }
+    }
+}
 
 // impl Div for Vector3f {
 //     type Output = Vector3f;

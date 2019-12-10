@@ -9,6 +9,8 @@ use std::clone::Clone;
 use serde::{Deserialize, Serialize};
 
 use crate::vector::Vec3;
+use crate::core::Vector3f;
+
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Point2T<T> {
@@ -239,6 +241,133 @@ impl SubAssign<&Vec3> for Point3f {
         self.x -= _rhs.e[0];
         self.y -= _rhs.e[1];
         self.z -= _rhs.e[2];
+    }
+}
+
+
+// New definitions to replace Vec3
+
+impl Add<Vector3f> for Point3f {
+    type Output = Point3f;
+
+    fn add(self, _rhs: Vector3f) -> Point3f {
+        Point3f {
+            x: self.x + _rhs.x,
+            y: self.y + _rhs.y,
+            z: self.z + _rhs.z,
+        }
+    }
+}
+
+impl Add<&Vector3f> for &Point3f {
+    type Output = Point3f;
+
+    fn add(self, _rhs: &Vector3f) -> Point3f {
+        Point3f {
+            x: self.x + _rhs.x,
+            y: self.y + _rhs.y,
+            z: self.z + _rhs.z,
+        }
+    }
+}
+
+impl AddAssign<&Vector3f> for Point3f {
+    fn add_assign(&mut self, _rhs: &Vector3f) {
+        self.x += _rhs.x;
+        self.y += _rhs.y;
+        self.z += _rhs.z;
+    }
+}
+
+// impl Sub for Point3f {
+//     type Output = Vector3f;
+
+//     fn sub(self, _rhs: Point3f) -> Vector3f {
+//         Vector3f {
+//             x: self.x - _rhs.x,
+//             y: self.y - _rhs.y,
+//             z: self.z - _rhs.z,
+//         }
+//     }
+// }
+
+// impl Sub<&Point3f> for Point3f {
+//     type Output = Vector3f;
+
+//     fn sub(self, _rhs: &Point3f) -> Vector3f {
+//         Vector3f {
+//             x: self.x - _rhs.x,
+//             y: self.y - _rhs.y,
+//             z: self.z - _rhs.z,
+//         }
+//     }
+// }
+
+// impl Sub for &Point3f {
+//     type Output = Vector3f;
+
+//     fn sub(self, _rhs: &Point3f) -> Vector3f {
+//         Vector3f {
+//             x: self.x - _rhs.x,
+//             y: self.y - _rhs.y,
+//             z: self.z - _rhs.z,
+//         }
+//     }
+// }
+
+// impl Sub<Point3f> for &Point3f {
+//     type Output = Vector3f;
+
+//     fn sub(self, _rhs: Point3f) -> Vector3f {
+//         Vector3f {
+//             x: self.x - _rhs.x,
+//             y: self.y - _rhs.y,
+//             z: self.z - _rhs.z,
+//         }
+//     }
+// }
+
+impl Sub<Vector3f> for Point3f {
+    type Output = Point3f;
+
+    fn sub(self, _rhs: Vector3f) -> Point3f {
+        Point3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
+
+impl Sub<&Vector3f> for Point3f {
+    type Output = Point3f;
+
+    fn sub(self, _rhs: &Vector3f) -> Point3f {
+        Point3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
+
+impl Sub<&Vector3f> for &Point3f {
+    type Output = Point3f;
+
+    fn sub(self, _rhs: &Vector3f) -> Point3f {
+        Point3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
+
+impl SubAssign<&Vector3f> for Point3f {
+    fn sub_assign(&mut self, _rhs: &Vector3f) {
+        self.x -= _rhs.x;
+        self.y -= _rhs.y;
+        self.z -= _rhs.z;
     }
 }
 
