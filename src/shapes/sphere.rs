@@ -1,18 +1,18 @@
 use std::f32;
 use serde::{Deserialize, Serialize};
 
-use crate::core::Point3f;
+use crate::core::{
+    Point3f,
+    Vector3f,
+    dot,
+};
 use crate::material::{
     Material,
     HitRecord
 };
 use crate::ray::Ray;
-use crate::vector::{
-    Vec3,
-    dot,
-};
-
 use crate::shapes::base::{solve_quadratic, Hitable};
+
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct Sphere {
@@ -20,6 +20,7 @@ pub struct Sphere {
     pub radius: f32,
     pub material: Material,
 }
+
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct MovingSphere {
@@ -33,6 +34,7 @@ pub struct MovingSphere {
     pub material: Material,
 }
 
+
 impl MovingSphere {
     fn centre(&self, time: f32) -> Point3f {
         let time_fac = (time - self.time0) / (self.time1 - self.time0);
@@ -40,11 +42,13 @@ impl MovingSphere {
     }
 }
 
+
 impl Hitable for Sphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc : Point3f = ray.origin() - (Vec3::from(&self.centre));
+        let oc : Point3f = ray.origin() - Vector3f::from(&self.centre);
 
-        let a : f32 = dot(&ray.direction(), &ray.direction());
+        let direction_dot = Vector3f::from(&ray.direction());
+        let a : f32 = dot(&direction_dot, &direction_dot);
         let b : f32 = oc.x * ray.direction().x() + oc.y * ray.direction().y() + oc.z * ray.direction().z();
         let c : f32 = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z - self.radius * self.radius;
 
@@ -97,11 +101,13 @@ impl Hitable for Sphere {
     }
 }
 
+
 impl Hitable for MovingSphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let oc : Point3f = ray.origin() - Vec3::from(&self.centre(ray.time));
+        let oc : Point3f = ray.origin() - Vector3f::from(&self.centre(ray.time));
 
-        let a : f32 = dot(&ray.direction(), &ray.direction());
+        let direction_dot = Vector3f::from(&ray.direction());
+        let a : f32 = dot(&direction_dot, &direction_dot);
         let b : f32 = oc.x * ray.direction().x() + oc.y * ray.direction().y() + oc.z * ray.direction().z();
         let c : f32 = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z - self.radius * self.radius;
 
