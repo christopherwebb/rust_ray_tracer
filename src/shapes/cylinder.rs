@@ -1,19 +1,19 @@
 use std::f32;
 use serde::{Deserialize, Serialize};
 
-use crate::core::Point3f;
+use crate::core::{
+    Point3f,
+    Vector3f,
+    dot,
+    cross,
+};
 use crate::material::{
     Material,
     HitRecord
 };
 use crate::ray::Ray;
 use crate::shapes::base::{solve_quadratic, Hitable};
-use crate::vector::{
-    Vec3,
-    dot,
-    unit_vector,
-    cross,
-};
+use crate::vector::Vec3;
 
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
@@ -28,7 +28,7 @@ pub struct Cylinder {
 
 impl Hitable for Cylinder {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
-        let centre_vec = Vec3::from(&self.centre);
+        let centre_vec = Vector3f::from(&self.centre);
         let oc = ray.origin() - &centre_vec;
         let oz_min = self.zMin - &self.centre.z;
         let oz_max = self.zMax - &self.centre.z;
@@ -121,38 +121,35 @@ impl Hitable for Cylinder {
             // let v = (hit.z() - oz_min) / (oz_max - oz_min);
             let v = (orig_hit.z - oz_min) / (oz_max - oz_min);
 
-            // Vector3f dpdu(-self.phi_max * hit.y(), self.phi_max * hit.x(), 0);
-            // Vector3f dpdv(0, 0, zMax - zMin);
+            let dpdu = Vector3f {
+                x: -self.phi_max * orig_hit.y,
+                y: self.phi_max * orig_hit.x,
+                z: 0.0
+            };
+            let dpdv = Vector3f { x: 0.0, y: 0.0, z: oz_max - oz_min };
 
-            // let dpdu = Vec3 { e: [-self.phi_max * hit.y(), self.phi_max * hit.x(), 0.0]};
-            let dpdu = Vec3 { e: [-self.phi_max * orig_hit.y, self.phi_max * orig_hit.x, 0.0]};
-            let dpdv = Vec3 { e: [0.0, 0.0, oz_max - oz_min]};
-
-            // let d2Pduu = -self.phi_max * self.phi_max * Vec3 { e: [hit.x(), hit.y(), 0.0]};
-            let d2Pduu = -self.phi_max * self.phi_max * Vec3 { e: [orig_hit.x, orig_hit.y, 0.0]};
-            let d2Pduv = Vec3 { e: [0.0, 0.0, 0.0]};
-            let d2Pdvv = Vec3 { e: [0.0, 0.0, 0.0]};
+            let d2Pduu = -self.phi_max * self.phi_max * Vector3f { x: orig_hit.x, y: orig_hit.y, z: 0.0 };
+            let d2Pduv = Vector3f { x: 0.0, y: 0.0, z: 0.0 };
+            let d2Pdvv = Vector3f { x: 0.0, y: 0.0, z: 0.0 };
 
             // Compute coefficients for fundamental forms
             let E = dot(&dpdu, &dpdu);
             let F = dot(&dpdu, &dpdv);
             let G = dot(&dpdv, &dpdv);
-            let N = unit_vector(&cross(&dpdu, &dpdv));
+            let N = &cross(&dpdu, &dpdv).unit_vector();
             let e = dot(&N, &d2Pduu);
             let f = dot(&N, &d2Pduv);
             let g = dot(&N, &d2Pdvv);
 
             let invEGF2 = 1.0 / (E * G - F * F);
-            let dndu = unit_vector(&((f * F - e * G) * invEGF2 * dpdu + 
-                                                   (e * F - f * E) * invEGF2 * dpdv));
-            let dndv = unit_vector(&((g * F - f * G) * invEGF2 * dpdu + 
-                                                   (f * F - g * E) * invEGF2 * dpdv));
+            let dndu = &((f * F - e * G) * invEGF2 * dpdu +
+                                                   (e * F - f * E) * invEGF2 * dpdv).unit_vector();
+            let dndv = &((g * F - f * G) * invEGF2 * dpdu +
+                                                   (f * F - g * E) * invEGF2 * dpdv).unit_vector();
 
             rec.t = t_hit;
             rec.p = hit;
-            // rec.normal = (&rec.p - &self.centre) / self.radius;
-            rec.normal = N;
-            // normal is Normalize(Cross(dpdu, dpdv))?
+            rec.normal = Vec3::from(N);
             rec.material = self.material;
             return true;
         }

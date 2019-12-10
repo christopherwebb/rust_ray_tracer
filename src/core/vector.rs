@@ -168,6 +168,32 @@ impl MulAssign<f32> for Vector3f {
 }
 
 
+impl Mul<Vector3f> for f32 {
+    type Output = Vector3f;
+
+    fn mul(self, _rhs: Vector3f) -> Vector3f {
+        Vector3f {
+            x: self * _rhs.x,
+            y: self * _rhs.y,
+            z: self * _rhs.z,
+        }
+    }
+}
+
+
+impl Mul<&Vector3f> for f32 {
+    type Output = Vector3f;
+
+    fn mul(self, _rhs: &Vector3f) -> Vector3f {
+        Vector3f {
+            x: self * _rhs.x,
+            y: self * _rhs.y,
+            z: self * _rhs.z,
+        }
+    }
+}
+
+
 impl Div<f32> for Vector3f {
     type Output = Vector3f;
 
