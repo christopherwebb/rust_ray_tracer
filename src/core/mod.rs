@@ -6,3 +6,10 @@ pub use self::point::{
     Point3i,
 };
 
+mod vector;
+pub use self::vector::{
+    Vector2f,
+    Vector2i,
+    Vector3f,
+    Vector3i,
+};
