@@ -47,9 +47,9 @@ impl Hitable for Sphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let oc : Point3f = ray.origin() - Vector3f::from(&self.centre);
 
-        let direction_dot = Vector3f::from(&ray.direction());
+        let direction_dot = ray.direction();
         let a : f32 = dot(&direction_dot, &direction_dot);
-        let b : f32 = oc.x * ray.direction().x() + oc.y * ray.direction().y() + oc.z * ray.direction().z();
+        let b : f32 = oc.x * ray.direction().x + oc.y * ray.direction().y + oc.z * ray.direction().z;
         let c : f32 = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z - self.radius * self.radius;
 
         let discriminant : f32 = b * b - a * c;
@@ -106,9 +106,9 @@ impl Hitable for MovingSphere {
     fn hit(&self, ray : &Ray, t_min: f32, t_max: f32, rec: &mut HitRecord) -> bool {
         let oc : Point3f = ray.origin() - Vector3f::from(&self.centre(ray.time));
 
-        let direction_dot = Vector3f::from(&ray.direction());
+        let direction_dot = ray.direction();
         let a : f32 = dot(&direction_dot, &direction_dot);
-        let b : f32 = oc.x * ray.direction().x() + oc.y * ray.direction().y() + oc.z * ray.direction().z();
+        let b : f32 = oc.x * ray.direction().x + oc.y * ray.direction().y + oc.z * ray.direction().z;
         let c : f32 = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z - self.radius * self.radius;
 
         let discriminant : f32 = b * b - a * c;

@@ -2,10 +2,13 @@ use rand::Rng;
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::Point3f;
+use crate::core::{
+    Point3f,
+    Vector3f,
+    dot,
+};
 use crate::vector::{
     Vec3,
-    dot,
     unit_vector,
     rnd_in_unit_sphere,
     reflect,
@@ -56,31 +59,34 @@ impl Material {
                     atten : self.albedo,
                     ray_out : Ray {
                         a: hit.p,
-                        b: target - hit.p,
+                        b: Vector3f::from(target - hit.p),
                         time: ray_in.time,
                     },
                 }
             },
             MaterialType::Metal => {
-                let reflected : Vec3 = reflect(&unit_vector(&ray_in.direction()), &hit.normal);
+                let reflected : Vec3 = reflect(
+                    &Vec3::from(&ray_in.direction().unit_vector()),
+                    &hit.normal
+                );
                 let scattered : Ray = Ray {
                     a: hit.p,
-                    b: &reflected + &(self.fuzz * rnd_in_unit_sphere()),
+                    b: Vector3f::from(&reflected + &(self.fuzz * rnd_in_unit_sphere())),
                     time: ray_in.time,
                 };
 
                 MaterialHit {
-                    hit : dot(&scattered.direction(), &hit.normal) > 0.0,
+                    hit : dot(&scattered.direction(), &Vector3f::from(&hit.normal)) > 0.0,
                     atten : self.albedo,
                     ray_out : scattered,
                 }
             },
             MaterialType::Dielectric => {
-                let reflected : Vec3 = reflect(&ray_in.direction(), &hit.normal);
+                let reflected : Vec3 = reflect(&Vec3::from(&ray_in.direction()), &hit.normal);
 
                 let atten : Vec3 = Vec3 {e: [1.0, 1.0, 1.0]};
 
-                let dot_prod : f32 = dot(&ray_in.direction(), &hit.normal);
+                let dot_prod : f32 = dot(&ray_in.direction(), &Vector3f::from(&hit.normal));
                 let (outward_normal, ni_over_nt, cosine) =
                 if dot_prod > 0.0 {
                     (
@@ -96,7 +102,7 @@ impl Material {
                     )
                 };
 
-                let (refracting, refracted) = refract(&ray_in.direction(), &outward_normal, ni_over_nt);
+                let (refracting, refracted) = refract(&Vec3::from(ray_in.direction()), &outward_normal, ni_over_nt);
                 if refracting {
                     let reflect_prob = Material::schlick(cosine, self.ref_idx);
                     let random : f32= rand::thread_rng().gen();
@@ -112,7 +118,7 @@ impl Material {
                         atten : atten,
                         ray_out : Ray {
                             a: hit.p,
-                            b: ray,
+                            b: Vector3f::from(&ray),
                             time: ray_in.time,
                         },
                     }
@@ -122,7 +128,7 @@ impl Material {
                         atten : atten,
                         ray_out : Ray {
                             a: hit.p,
-                            b: reflected,
+                            b: Vector3f::from(&reflected),
                             time: ray_in.time,
                         },
                     }

@@ -33,8 +33,8 @@ impl Hitable for Cylinder {
         let oz_min = self.zMin - &self.centre.z;
         let oz_max = self.zMax - &self.centre.z;
 
-        let a : f32 = &ray.b.x() * &ray.b.x() + &ray.b.y() * &ray.b.y();
-        let b : f32 = 2.0 * (&oc.x * &ray.b.x() + &oc.y * &ray.b.y());
+        let a : f32 = &ray.b.x * &ray.b.x + &ray.b.y * &ray.b.y;
+        let b : f32 = 2.0 * (&oc.x * &ray.b.x + &oc.y * &ray.b.y);
         let c : f32 = &oc.x * &oc.x + &oc.y * &oc.y - self.radius * self.radius;
 
         let (result, t0, t1) = solve_quadratic(a, b, c);

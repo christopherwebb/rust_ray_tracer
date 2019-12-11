@@ -58,9 +58,8 @@ fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
         return scatter_result.atten * colour(&scatter_result.ray_out, world, depth + 1);
     }
 
-    let dir : Vec3 = ray.direction();
-    let unit_dir : Vec3 = unit_vector(&dir);
-    let t : f32 = 0.5 * (unit_dir.y() + 1.0);
+    let unit_dir = ray.direction().unit_vector();
+    let t : f32 = 0.5 * (unit_dir.y + 1.0);
     (1.0 - t) * Vec3 { e: [1.0, 1.0, 1.0]} + t * Vec3 { e: [0.5, 0.7, 1.0]}
 }
 

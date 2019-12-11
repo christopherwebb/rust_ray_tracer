@@ -4,7 +4,10 @@ use rand::Rng;
 
 use serde::{Deserialize, Serialize};
 
-use crate::core::Point3f;
+use crate::core::{
+    Point3f,
+    Vector3f,
+};
 use crate::vector::{
     Vec3,
     cross,
@@ -71,14 +74,18 @@ impl Camera {
 
     pub fn get_ray(self, s: f32, t: f32) -> Ray {
         let rd = self.lens_radius * rnd_in_unit_disc();
-        let offset = self.u * rd.x() + self.v * rd.y();
+        let offset = Vector3f::from(self.u * rd.x() + self.v * rd.y());
 
         let mut rng = thread_rng();
         let time = self.time_0 + (self.time_1 - self.time_0) * rng.gen::<f64>() as f32;
 
         Ray {
             a: &self.origin + &offset,
-            b: &self.lower_left_corner + &(s * &self.horizontal) + t * &self.vertical - &self.origin - offset,
+            b: &self.lower_left_corner
+                + s * Vector3f::from(&self.horizontal)
+                + t * Vector3f::from(&self.vertical)
+                - &self.origin
+                - offset,
             time: time,
         }
     }
