@@ -58,19 +58,21 @@ impl Vector3f {
     }
 }
 
-pub fn dot(l: &Vector3f, r: &Vector3f) -> f32
-    // where T: Mul + Copy + Add,
-    //       <T as Mul>::Output: Add<Output=T>
+pub fn dot<T>(l: &Vector3T<T>, r: &Vector3T<T>) -> T
+    where T: Mul + Copy + Add,
+          T: Mul<Output=T>,
+          T: Add<Output=T>,
+
 {
     l.x * r.x + l.y * r.y + l.z * r.z
 }
 
-// pub fn cross<T: Mul + Sub>(l: &Vector3T<T>, r: &Vector3T<T>) -> Vector3T<T>
-//     where T: Mul + Copy + Sub,
-//           <T as Mul>::Output: Sub<Output=T>
-pub fn cross(l: &Vector3f, r: &Vector3f) -> Vector3f
+pub fn cross<T>(l: &Vector3T<T>, r: &Vector3T<T>) -> Vector3T<T>
+    where T: Mul + Copy + Sub,
+          T: Mul<Output=T>,
+          T: Sub<Output=T>,
 {
-    Vector3f {
+    Vector3T {
         x: l.y * r.z - l.z * r.y,
         y: l.z * r.x - l.x * r.z,
         z: l.x * r.y - l.y * r.x,
