@@ -8,7 +8,9 @@ use serde_json::{Result, Value};
 
 extern crate rust_ray_tracing;
 
-use rust_ray_tracing::core::Point3f;
+use rust_ray_tracing::core::{
+    Point3f, Vector3f
+};
 use rust_ray_tracing::camera::Camera;
 use rust_ray_tracing::scene::{HitList, Scene};
 use rust_ray_tracing::material::Material;
@@ -27,7 +29,7 @@ fn final_weekend(aspect : f32) -> Scene {
     let camera = Camera::create(
         look_from,
         look_at,
-        Vec3 { e: [ 0.0, 1.0,  0.0]},
+        Vector3f { x: 0.0, y: 1.0, z:  0.0 },
         20.0,
         aspect,
         0.1,

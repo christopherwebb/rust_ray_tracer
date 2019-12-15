@@ -6,7 +6,9 @@ use serde_json::{Result, Value};
 
 extern crate rust_ray_tracing;
 
-use rust_ray_tracing::core::Point3f;
+use rust_ray_tracing::core::{
+    Point3f, Vector3f
+};
 use rust_ray_tracing::camera::Camera;
 use rust_ray_tracing::scene::{HitList, Scene};
 use rust_ray_tracing::material::Material;
@@ -18,9 +20,9 @@ use rust_ray_tracing::shapes::sphere::{Sphere, MovingSphere};
 
 fn three_spheres_on_world(aspect : f32) -> Scene {
     let camera = Camera::create(
-        Point3f { x: 0.0, y: 0.0, z:  0.0 },
-        Point3f { x: 0.0, y: 0.0, z: -1.0 },
-        Vec3 { e: [ 0.0, 1.0,  0.0]},
+        Point3f  { x: 0.0, y: 0.0, z:  0.0 },
+        Point3f  { x: 0.0, y: 0.0, z: -1.0 },
+        Vector3f { x: 0.0, y: 1.0, z:  0.0 },
         90.0,
         aspect,
         0.1,

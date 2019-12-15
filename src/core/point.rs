@@ -152,30 +152,6 @@ impl AddAssign<&Vec3> for Point3f {
     }
 }
 
-impl Sub for &Point3f {
-    type Output = Vec3;
-
-    fn sub(self, _rhs: &Point3f) -> Vec3 {
-        Vec3 { e: [
-            self.x - _rhs.x,
-            self.y - _rhs.y,
-            self.z - _rhs.z,
-        ]}
-    }
-}
-
-impl Sub<Point3f> for &Point3f {
-    type Output = Vec3;
-
-    fn sub(self, _rhs: Point3f) -> Vec3 {
-        Vec3 { e: [
-            self.x - _rhs.x,
-            self.y - _rhs.y,
-            self.z - _rhs.z,
-        ]}
-    }
-}
-
 impl Sub<Vec3> for Point3f {
     type Output = Point3f;
 
@@ -303,29 +279,29 @@ impl Sub<&Point3f> for Point3f {
     }
 }
 
-// impl Sub for &Point3f {
-//     type Output = Vector3f;
+impl Sub for &Point3f {
+    type Output = Vector3f;
 
-//     fn sub(self, _rhs: &Point3f) -> Vector3f {
-//         Vector3f {
-//             x: self.x - _rhs.x,
-//             y: self.y - _rhs.y,
-//             z: self.z - _rhs.z,
-//         }
-//     }
-// }
+    fn sub(self, _rhs: &Point3f) -> Vector3f {
+        Vector3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
 
-// impl Sub<Point3f> for &Point3f {
-//     type Output = Vector3f;
+impl Sub<Point3f> for &Point3f {
+    type Output = Vector3f;
 
-//     fn sub(self, _rhs: Point3f) -> Vector3f {
-//         Vector3f {
-//             x: self.x - _rhs.x,
-//             y: self.y - _rhs.y,
-//             z: self.z - _rhs.z,
-//         }
-//     }
-// }
+    fn sub(self, _rhs: Point3f) -> Vector3f {
+        Vector3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
 
 impl Sub<Vector3f> for Point3f {
     type Output = Point3f;
