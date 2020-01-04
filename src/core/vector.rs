@@ -1,6 +1,7 @@
 use std::ops::{
     Add,
     AddAssign,
+    Neg,
     Sub,
     SubAssign,
     Mul,
@@ -14,6 +15,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::vector::Vec3;
 use crate::core::Point3f;
+use crate::core::Normal3f;
 
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
@@ -58,14 +60,14 @@ impl Vector3f {
     }
 }
 
-pub fn dot<T>(l: &Vector3T<T>, r: &Vector3T<T>) -> T
-    where T: Mul + Copy + Add,
-          T: Mul<Output=T>,
-          T: Add<Output=T>,
+// pub fn dot<T>(l: &Vector3T<T>, r: &Vector3T<T>) -> T
+//     where T: Mul + Copy + Add,
+//           T: Mul<Output=T>,
+//           T: Add<Output=T>,
 
-{
-    l.x * r.x + l.y * r.y + l.z * r.z
-}
+// {
+//     l.x * r.x + l.y * r.y + l.z * r.z
+// }
 
 pub fn cross<T>(l: &Vector3T<T>, r: &Vector3T<T>) -> Vector3T<T>
     where T: Mul + Copy + Sub,
@@ -113,10 +115,34 @@ impl AddAssign for Vector3f {
     }
 }
 
+impl Neg for Vector3f {
+    type Output = Vector3f;
+
+    fn neg(self) -> Vector3f {
+        Vector3f {
+            x: -self.x,
+            y: -self.y,
+            z: -self.z,
+        }
+    }
+}
+
 impl Sub for Vector3f {
     type Output = Vector3f;
 
     fn sub(self, _rhs: Vector3f) -> Vector3f {
+        Vector3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
+
+impl Sub<&Vector3f> for Vector3f {
+    type Output = Vector3f;
+
+    fn sub(self, _rhs: &Vector3f) -> Vector3f {
         Vector3f {
             x: self.x - _rhs.x,
             y: self.y - _rhs.y,
@@ -130,6 +156,18 @@ impl Sub<&Vector3f> for &Vector3f {
     type Output = Vector3f;
 
     fn sub(self, _rhs: &Vector3f) -> Vector3f {
+        Vector3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
+
+impl Sub<Vector3f> for &Vector3f {
+    type Output = Vector3f;
+
+    fn sub(self, _rhs: Vector3f) -> Vector3f {
         Vector3f {
             x: self.x - _rhs.x,
             y: self.y - _rhs.y,
@@ -231,6 +269,17 @@ impl From<&Point3f> for Vector3f {
     }
 }
 
+impl From<Normal3f> for Vector3f {
+    fn from(from: Normal3f) -> Self {
+        Vector3f {x: from.x, y: from.y, z: from.z}
+    }
+}
+
+impl From<&Normal3f> for Vector3f {
+    fn from(from: &Normal3f) -> Self {
+        Vector3f {x: from.x, y: from.y, z: from.z}
+    }
+}
 
 impl From<Vector3f> for Vec3 {
     fn from(from: Vector3f) -> Self {
@@ -263,6 +312,9 @@ impl From<&Vec3> for Vector3f {
         }
     }
 }
+
+
+
 
 // impl Div for Vector3f {
 //     type Output = Vector3f;

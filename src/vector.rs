@@ -319,9 +319,9 @@ pub fn rnd_in_unit_disc() -> Vec3 {
     }
 }
 
-pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
-    v - &(2.0 * dot(v, n) * n)
-}
+// pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+//     v - &(2.0 * dot(v, n) * n)
+// }
 
 pub fn refract(v : &Vec3, n : &Vec3, ni_over_nt : f32) -> (bool, Option<Vec3>) {
     let uv : Vec3 = unit_vector(v);

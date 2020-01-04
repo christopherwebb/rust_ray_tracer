@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::vector::Vec3;
 use crate::core::Vector3f;
+use crate::core::Normal3f;
 
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
@@ -244,6 +245,62 @@ impl Add<&Vector3f> for &Point3f {
             y: self.y + _rhs.y,
             z: self.z + _rhs.z,
         }
+    }
+}
+
+impl Add<Normal3f> for Point3f {
+    type Output = Point3f;
+
+    fn add(self, _rhs: Normal3f) -> Point3f {
+        Point3f {
+            x: self.x + _rhs.x,
+            y: self.y + _rhs.y,
+            z: self.z + _rhs.z,
+        }
+    }
+}
+
+impl Add<&Normal3f> for Point3f {
+    type Output = Point3f;
+
+    fn add(self, _rhs: &Normal3f) -> Point3f {
+        Point3f {
+            x: self.x + _rhs.x,
+            y: self.y + _rhs.y,
+            z: self.z + _rhs.z,
+        }
+    }
+}
+
+impl Add<Normal3f> for &Point3f {
+    type Output = Point3f;
+
+    fn add(self, _rhs: Normal3f) -> Point3f {
+        Point3f {
+            x: self.x + _rhs.x,
+            y: self.y + _rhs.y,
+            z: self.z + _rhs.z,
+        }
+    }
+}
+
+impl Add<&Normal3f> for &Point3f {
+    type Output = Point3f;
+
+    fn add(self, _rhs: &Normal3f) -> Point3f {
+        Point3f {
+            x: self.x + _rhs.x,
+            y: self.y + _rhs.y,
+            z: self.z + _rhs.z,
+        }
+    }
+}
+
+impl AddAssign<&Normal3f> for Point3f {
+    fn add_assign(&mut self, _rhs: &Normal3f) {
+        self.x += _rhs.x;
+        self.y += _rhs.y;
+        self.z += _rhs.z;
     }
 }
 
