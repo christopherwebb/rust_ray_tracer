@@ -163,6 +163,18 @@ impl Mul<f32> for Normal3f {
     }
 }
 
+impl Mul<f32> for &Normal3f {
+    type Output = Normal3f;
+
+    fn mul(self, _rhs: f32) -> Normal3f {
+        Normal3f {
+            x: self.x * _rhs,
+            y: self.y * _rhs,
+            z: self.z * _rhs,
+        }
+    }
+}
+
 
 impl MulAssign<f32> for Normal3f {
     fn mul_assign(&mut self, _rhs: f32) {

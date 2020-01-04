@@ -21,7 +21,7 @@ mod vector;
 mod core;
 
 
-use crate::core::Point3f;
+use crate::core::{Point3f, Normal3f};
 use crate::material::{
     Material,
     MaterialHit,
@@ -41,7 +41,7 @@ fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
     let mut hit_rec : HitRecord = HitRecord {
             t: 10000.0,
             p: Point3f { x: 0.0, y: 0.0, z: 0.0 },
-            normal: Vec3 { e: [0.0, 0.0, 0.0]},
+            normal: Normal3f { x: 0.0, y: 0.0, z: 0.0 },
             material: Material::make_dummy_material(),
         };
 

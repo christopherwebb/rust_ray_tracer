@@ -185,6 +185,70 @@ impl SubAssign for Vector3f {
     }
 }
 
+impl Sub<Normal3f> for Vector3f {
+    type Output = Vector3f;
+
+    fn sub(self, _rhs: Normal3f) -> Vector3f {
+        Vector3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
+
+impl Sub<&Normal3f> for Vector3f {
+    type Output = Vector3f;
+
+    fn sub(self, _rhs: &Normal3f) -> Vector3f {
+        Vector3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
+
+
+impl Sub<&Normal3f> for &Vector3f {
+    type Output = Vector3f;
+
+    fn sub(self, _rhs: &Normal3f) -> Vector3f {
+        Vector3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
+
+impl Sub<Normal3f> for &Vector3f {
+    type Output = Vector3f;
+
+    fn sub(self, _rhs: Normal3f) -> Vector3f {
+        Vector3f {
+            x: self.x - _rhs.x,
+            y: self.y - _rhs.y,
+            z: self.z - _rhs.z,
+        }
+    }
+}
+
+impl SubAssign<Normal3f> for Vector3f {
+    fn sub_assign(&mut self, _rhs: Normal3f) {
+        self.x -= _rhs.x;
+        self.y -= _rhs.y;
+        self.z -= _rhs.z;
+    }
+}
+
+impl SubAssign<&Normal3f> for Vector3f {
+    fn sub_assign(&mut self, _rhs: &Normal3f) {
+        self.x -= _rhs.x;
+        self.y -= _rhs.y;
+        self.z -= _rhs.z;
+    }
+}
 
 impl Mul<f32> for Vector3f {
     type Output = Vector3f;

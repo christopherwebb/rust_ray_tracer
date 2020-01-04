@@ -8,11 +8,11 @@ use crate::core::{
     Normal3f,
     dot_vn,
     reflect,
+    refract,
 };
 use crate::vector::{
     Vec3,
     rnd_in_unit_sphere,
-    refract,
 };
 
 use crate::ray::Ray;
@@ -102,7 +102,7 @@ impl Material {
                     )
                 };
 
-                let (refracting, refracted) = refract(&Vec3::from(ray_in.direction()), &outward_normal, ni_over_nt);
+                let (refracting, refracted) = refract(&ray_in.direction(), &outward_normal, ni_over_nt);
                 if refracting {
                     let reflect_prob = Material::schlick(cosine, self.ref_idx);
                     let random : f32= rand::thread_rng().gen();
