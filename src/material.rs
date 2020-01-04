@@ -5,13 +5,13 @@ use serde::{Deserialize, Serialize};
 use crate::core::{
     Point3f,
     Vector3f,
-    dot,
+    Normal3f,
+    dot_vn,
+    reflect,
 };
 use crate::vector::{
     Vec3,
-    unit_vector,
     rnd_in_unit_sphere,
-    reflect,
     refract,
 };
 
@@ -22,7 +22,7 @@ use crate::ray::Ray;
 pub struct HitRecord {
     pub t : f32,
     pub p : Point3f,
-    pub normal : Vec3,
+    pub normal : Normal3f,
     pub material: Material,
 }
 
@@ -65,28 +65,28 @@ impl Material {
                 }
             },
             MaterialType::Metal => {
-                let reflected : Vec3 = reflect(
-                    &Vec3::from(&ray_in.direction().unit_vector()),
+                let reflected = reflect(
+                    &ray_in.direction().unit_vector(),
                     &hit.normal
                 );
                 let scattered : Ray = Ray {
                     a: hit.p,
-                    b: Vector3f::from(&reflected + &(self.fuzz * rnd_in_unit_sphere())),
+                    b: reflected + Vector3f::from(&(self.fuzz * rnd_in_unit_sphere())),
                     time: ray_in.time,
                 };
 
                 MaterialHit {
-                    hit : dot(&scattered.direction(), &Vector3f::from(&hit.normal)) > 0.0,
+                    hit : dot_vn(&scattered.direction(), &hit.normal) > 0.0,
                     atten : self.albedo,
                     ray_out : scattered,
                 }
             },
             MaterialType::Dielectric => {
-                let reflected : Vec3 = reflect(&Vec3::from(&ray_in.direction()), &hit.normal);
+                let reflected = reflect(&ray_in.direction(), &hit.normal);
 
                 let atten : Vec3 = Vec3 {e: [1.0, 1.0, 1.0]};
 
-                let dot_prod : f32 = dot(&ray_in.direction(), &Vector3f::from(&hit.normal));
+                let dot_prod : f32 = dot_vn(&ray_in.direction(), &hit.normal);
                 let (outward_normal, ni_over_nt, cosine) =
                 if dot_prod > 0.0 {
                     (
@@ -118,7 +118,7 @@ impl Material {
                         atten : atten,
                         ray_out : Ray {
                             a: hit.p,
-                            b: Vector3f::from(&ray),
+                            b: ray,
                             time: ray_in.time,
                         },
                     }
@@ -128,7 +128,7 @@ impl Material {
                         atten : atten,
                         ray_out : Ray {
                             a: hit.p,
-                            b: Vector3f::from(&reflected),
+                            b: reflected,
                             time: ray_in.time,
                         },
                     }
