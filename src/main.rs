@@ -31,10 +31,7 @@ use crate::ray::Ray;
 use crate::render::RenderResult;
 use crate::shapes::base::Hitable;
 use crate::scene::HitList;
-use crate::vector::{
-    Vec3,
-    unit_vector,
-};
+use crate::vector::Vec3;
 
 
 fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
