@@ -4,7 +4,8 @@ use serde::{Deserialize, Serialize};
 use crate::core::{
     Point3f,
     Vector3f,
-    dot,
+    Normal3f,
+    dot_vv,
     cross,
 };
 use crate::material::{
@@ -13,7 +14,7 @@ use crate::material::{
 };
 use crate::ray::Ray;
 use crate::shapes::base::{solve_quadratic, Hitable};
-use crate::vector::Vec3;
+// use crate::vector::Vec3;
 
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
@@ -133,13 +134,13 @@ impl Hitable for Cylinder {
             let d2Pdvv = Vector3f { x: 0.0, y: 0.0, z: 0.0 };
 
             // Compute coefficients for fundamental forms
-            let E = dot(&dpdu, &dpdu);
-            let F = dot(&dpdu, &dpdv);
-            let G = dot(&dpdv, &dpdv);
+            let E = dot_vv(&dpdu, &dpdu);
+            let F = dot_vv(&dpdu, &dpdv);
+            let G = dot_vv(&dpdv, &dpdv);
             let N = &cross(&dpdu, &dpdv).unit_vector();
-            let e = dot(&N, &d2Pduu);
-            let f = dot(&N, &d2Pduv);
-            let g = dot(&N, &d2Pdvv);
+            let e = dot_vv(&N, &d2Pduu);
+            let f = dot_vv(&N, &d2Pduv);
+            let g = dot_vv(&N, &d2Pdvv);
 
             let invEGF2 = 1.0 / (E * G - F * F);
             let dndu = &((f * F - e * G) * invEGF2 * dpdu +
@@ -149,7 +150,7 @@ impl Hitable for Cylinder {
 
             rec.t = t_hit;
             rec.p = hit;
-            rec.normal = Vec3::from(N);
+            rec.normal = Normal3f::from(N);
             rec.material = self.material;
             return true;
         }

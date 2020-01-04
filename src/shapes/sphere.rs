@@ -4,7 +4,8 @@ use serde::{Deserialize, Serialize};
 use crate::core::{
     Point3f,
     Vector3f,
-    dot,
+    Normal3f,
+    dot_vv,
 };
 use crate::material::{
     Material,
@@ -12,7 +13,7 @@ use crate::material::{
 };
 use crate::ray::Ray;
 use crate::shapes::base::{solve_quadratic, Hitable};
-use crate::vector::Vec3;
+// use crate::vector::Vec3;
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct Sphere {
@@ -48,7 +49,7 @@ impl Hitable for Sphere {
         let oc : Point3f = ray.origin() - Vector3f::from(&self.centre);
 
         let direction_dot = ray.direction();
-        let a : f32 = dot(&direction_dot, &direction_dot);
+        let a : f32 = dot_vv(&direction_dot, &direction_dot);
         let b : f32 = oc.x * ray.direction().x + oc.y * ray.direction().y + oc.z * ray.direction().z;
         let c : f32 = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z - self.radius * self.radius;
 
@@ -83,7 +84,7 @@ impl Hitable for Sphere {
         if temp > t_min && temp < t_max {
             rec.t = temp;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = Vec3::from((&rec.p - &self.centre) / self.radius);
+            rec.normal = Normal3f::from(&rec.p - &self.centre) / self.radius;
             rec.material = self.material;
             return true;
         }
@@ -92,7 +93,7 @@ impl Hitable for Sphere {
         if temp2 > t_min && temp2 < t_max {
             rec.t = temp2;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = Vec3::from((&rec.p - &self.centre) / self.radius);
+            rec.normal = Normal3f::from(&rec.p - &self.centre) / self.radius;
             rec.material = self.material;
             return true;
         }
@@ -107,7 +108,7 @@ impl Hitable for MovingSphere {
         let oc : Point3f = ray.origin() - Vector3f::from(&self.centre(ray.time));
 
         let direction_dot = ray.direction();
-        let a : f32 = dot(&direction_dot, &direction_dot);
+        let a : f32 = dot_vv(&direction_dot, &direction_dot);
         let b : f32 = oc.x * ray.direction().x + oc.y * ray.direction().y + oc.z * ray.direction().z;
         let c : f32 = oc.x * oc.x + oc.y * oc.y + oc.z * oc.z - self.radius * self.radius;
 
@@ -121,7 +122,7 @@ impl Hitable for MovingSphere {
         if temp > t_min && temp < t_max {
             rec.t = temp;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = Vec3::from((&rec.p - &self.centre(ray.time)) / self.radius);
+            rec.normal = Normal3f::from(&rec.p - &self.centre(ray.time)) / self.radius;
             rec.material = self.material;
             return true;
         }
@@ -130,7 +131,7 @@ impl Hitable for MovingSphere {
         if temp2 > t_min && temp2 < t_max {
             rec.t = temp2;
             rec.p = ray.point_at_parameter(rec.t);
-            rec.normal = Vec3::from((&rec.p - &self.centre(ray.time)) / self.radius);
+            rec.normal = Normal3f::from(&rec.p - &self.centre(ray.time)) / self.radius;
             rec.material = self.material;
             return true;
         }
