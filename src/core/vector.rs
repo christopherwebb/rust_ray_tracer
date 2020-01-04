@@ -11,11 +11,16 @@ use std::ops::{
 };
 
 use std::clone::Clone;
+
+use rand::thread_rng;
+use rand::Rng;
+
 use serde::{Deserialize, Serialize};
 
 use crate::vector::Vec3;
 use crate::core::Point3f;
 use crate::core::Normal3f;
+use crate::core::dot_vv;
 
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
@@ -58,16 +63,40 @@ impl Vector3f {
     pub fn unit_vector(self) -> Self {
         self / self.length()
     }
+
+    pub fn rnd_in_unit_sphere() -> Self {
+        let mut rng = thread_rng();
+        let sub = Self { x: 1.0, y: 1.0, z: 1.0 };
+
+        loop {
+            let x = 2.0 * Self {
+                x: rng.gen::<f64>() as f32,
+                y: rng.gen::<f64>() as f32,
+                z: rng.gen::<f64>() as f32,
+            } - sub;
+            if x.squared_length() < 1.0 {
+                break x;
+            }
+        }
+    }
+
+    pub fn rnd_in_unit_disc() -> Self {
+        let mut rng = thread_rng();
+        let sub = Self { x: 1.0, y: 1.0, z: 1.0 };
+
+        loop {
+            let p = 2.0 * Self {
+                x: rng.gen::<f64>() as f32,
+                y: rng.gen::<f64>() as f32,
+                z: 0.0,
+            } - sub;
+
+            if dot_vv(&p, &p) < 1.0 {
+                break p;
+            }
+        }
+    }
 }
-
-// pub fn dot<T>(l: &Vector3T<T>, r: &Vector3T<T>) -> T
-//     where T: Mul + Copy + Add,
-//           T: Mul<Output=T>,
-//           T: Add<Output=T>,
-
-// {
-//     l.x * r.x + l.y * r.y + l.z * r.z
-// }
 
 pub fn cross<T>(l: &Vector3T<T>, r: &Vector3T<T>) -> Vector3T<T>
     where T: Mul + Copy + Sub,

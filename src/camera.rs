@@ -9,7 +9,6 @@ use crate::core::{
     Vector3f,
     cross,
 };
-use crate::vector::rnd_in_unit_disc;
 use crate::ray::Ray;
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
@@ -66,8 +65,8 @@ impl Camera {
     }
 
     pub fn get_ray(self, s: f32, t: f32) -> Ray {
-        let rd = self.lens_radius * rnd_in_unit_disc();
-        let offset = self.u * rd.x() + self.v * rd.y();
+        let rd = self.lens_radius * Vector3f::rnd_in_unit_disc();
+        let offset = self.u * rd.x + self.v * rd.y;
 
         let mut rng = thread_rng();
         let time = self.time_0 + (self.time_1 - self.time_0) * rng.gen::<f64>() as f32;

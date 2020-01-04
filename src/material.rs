@@ -10,10 +10,7 @@ use crate::core::{
     reflect,
     refract,
 };
-use crate::vector::{
-    Vec3,
-    rnd_in_unit_sphere,
-};
+use crate::vector::Vec3;
 
 use crate::ray::Ray;
 
@@ -52,7 +49,7 @@ impl Material {
     pub fn scatter(self, ray_in: &Ray, hit: &HitRecord) -> MaterialHit {
         match self.mat_type {
             MaterialType::Lambertian => {
-                let target = hit.p + hit.normal + rnd_in_unit_sphere();
+                let target = hit.p + hit.normal + Vector3f::rnd_in_unit_sphere();
 
                 MaterialHit {
                     hit : true,
@@ -71,7 +68,7 @@ impl Material {
                 );
                 let scattered : Ray = Ray {
                     a: hit.p,
-                    b: reflected + Vector3f::from(&(self.fuzz * rnd_in_unit_sphere())),
+                    b: reflected + self.fuzz * Vector3f::rnd_in_unit_sphere(),
                     time: ray_in.time,
                 };
 
