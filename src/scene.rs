@@ -1,14 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use crate::core::Point3f;
+use crate::core::{Point3f, Normal3f};
 use crate::camera::Camera;
 use crate::shapes::base::Hitable;
 use crate::shapes::cylinder::Cylinder;
 use crate::shapes::sphere::{Sphere, MovingSphere};
 
 use crate::ray::Ray;
-
-use crate::vector::Vec3;
 
 use crate::material::{
     Material,
@@ -33,7 +31,7 @@ impl Hitable for HitList {
         let mut hit_rec : HitRecord = HitRecord {
             t: t_max,
             p: Point3f { x: 0.0, y: 0.0, z: 0.0 },
-            normal: Vec3 { e: [0.0, 0.0, 0.0]},
+            normal: Normal3f { x: 0.0, y: 0.0, z: 0.0 },
             material: Material::make_dummy_material(),
         };
         let mut hit_anything : bool = false;
