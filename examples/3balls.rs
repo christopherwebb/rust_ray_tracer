@@ -7,7 +7,9 @@ use serde_json::{Result, Value};
 extern crate rust_ray_tracing;
 
 use rust_ray_tracing::core::{
-    Point3f, Vector3f
+    Point3f,
+    Vector3f,
+    Colour,
 };
 use rust_ray_tracing::camera::Camera;
 use rust_ray_tracing::scene::{HitList, Scene};
@@ -37,21 +39,21 @@ fn three_spheres_on_world(aspect : f32) -> Scene {
                 centre: Point3f { x: 0.0, y: 0.0, z: -1.0},
                 radius: 0.5,
                 material: Material::make_lambertian(
-                    Vec3 { e: [0.1, 0.2, 0.5]},
+                    Colour { r: 0.1, g: 0.2, b: 0.5},
                 )
             },
             Sphere {
                 centre: Point3f { x: 0.0, y: -100.5, z: -1.0},
                 radius: 100.0,
                 material: Material::make_lambertian(
-                    Vec3 { e: [0.8, 0.8, 0.0]},
+                    Colour { r: 0.8, g: 0.8, b: 0.0},
                 )
             },
             Sphere {
                 centre: Point3f { x: 1.0, y: 0.0, z: -1.0},
                 radius: 0.5,
                 material: Material::make_metal(
-                    Vec3 { e: [0.8, 0.6, 0.2]},
+                    Colour { r: 0.8, g: 0.6, b: 0.2},
                     1.0,
                 )
             },

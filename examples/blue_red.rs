@@ -7,12 +7,14 @@ use serde_json::{Result, Value};
 extern crate rust_ray_tracing;
 
 use rust_ray_tracing::core::{
-    Point3f, Vector3f
+    Point3f,
+    Vector3f,
+    Colour,
 };
 use rust_ray_tracing::camera::Camera;
 use rust_ray_tracing::scene::{HitList, Scene};
 use rust_ray_tracing::material::Material;
-use rust_ray_tracing::vector::Vec3;
+// use rust_ray_tracing::vector::Vec3;
 use rust_ray_tracing::shapes::base::Hitable;
 use rust_ray_tracing::shapes::cylinder::Cylinder;
 use rust_ray_tracing::shapes::sphere::{Sphere, MovingSphere};
@@ -38,14 +40,14 @@ fn blue_red_spheres(aspect : f32) -> Scene {
                 centre: Point3f { x: -sphere_radius, y: 0.0, z: -1.0},
                 radius: sphere_radius,
                 material: Material::make_lambertian(
-                    Vec3 { e: [0.0, 0.0, 1.0]},
+                    Colour { r: 0.0, g: 0.0, b: 1.0 },
                 )
             },
             Sphere {
                 centre: Point3f { x: sphere_radius, y: 0.0, z: -1.0},
                 radius: sphere_radius,
                 material: Material::make_lambertian(
-                    Vec3 { e: [1.0, 0.0, 0.0]},
+                    Colour { r: 1.0, g: 0.0, b: 0.0 },
                 )
             },
         ],

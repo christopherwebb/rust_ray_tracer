@@ -7,12 +7,14 @@ use serde_json::{Result, Value};
 extern crate rust_ray_tracing;
 
 use rust_ray_tracing::core::{
-    Point3f, Vector3f
+    Point3f,
+    Vector3f,
+    Colour,
 };
 use rust_ray_tracing::camera::Camera;
 use rust_ray_tracing::scene::{HitList, Scene};
 use rust_ray_tracing::material::Material;
-use rust_ray_tracing::vector::Vec3;
+// use rust_ray_tracing::vector::Vec3;
 use rust_ray_tracing::shapes::base::Hitable;
 use rust_ray_tracing::shapes::cylinder::Cylinder;
 use rust_ray_tracing::shapes::sphere::{Sphere, MovingSphere};
@@ -42,7 +44,7 @@ fn cylinders(aspect : f32) -> Scene {
                 zMin: -0.25,
                 zMax: 0.25,
                 material: Material::make_lambertian(
-                    Vec3 { e: [0.1, 0.2, 0.5]},
+                    Colour { r: 0.1, g: 0.2, b: 0.5 },
                 )
             },
             Cylinder {
@@ -52,7 +54,7 @@ fn cylinders(aspect : f32) -> Scene {
                 zMin: -1.0,
                 zMax: 1.0,
                 material: Material::make_metal(
-                    Vec3 { e: [0.8, 0.6, 0.2]},
+                    Colour { r: 0.8, g: 0.6, b: 0.2 },
                     1.0,
                 )
             },

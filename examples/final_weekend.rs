@@ -9,12 +9,14 @@ use serde_json::{Result, Value};
 extern crate rust_ray_tracing;
 
 use rust_ray_tracing::core::{
-    Point3f, Vector3f
+    Point3f,
+    Vector3f,
+    Colour,
 };
 use rust_ray_tracing::camera::Camera;
 use rust_ray_tracing::scene::{HitList, Scene};
 use rust_ray_tracing::material::Material;
-use rust_ray_tracing::vector::Vec3;
+// use rust_ray_tracing::vector::Vec3;
 use rust_ray_tracing::shapes::base::Hitable;
 use rust_ray_tracing::shapes::cylinder::Cylinder;
 use rust_ray_tracing::shapes::sphere::{Sphere, MovingSphere};
@@ -47,7 +49,7 @@ fn final_weekend(aspect : f32) -> Scene {
         centre: Point3f { x: 0.0, y: -1000.0, z: 0.0},
         radius: 1000.0,
         material: Material::make_lambertian(
-            Vec3 { e: [0.5, 0.5, 0.5]},
+            Colour { r: 0.5, g: 0.5, b: 0.5 },
         )
     });
 
@@ -60,19 +62,19 @@ fn final_weekend(aspect : f32) -> Scene {
         centre: Point3f { x: -4.0, y: 1.0, z: 0.0},
         radius: large_radius,
         material: Material::make_lambertian(
-            Vec3 { e: [0.4, 0.2, 0.1]},
+            Colour { r: 0.4, g: 0.2, b: 0.1 },
         )
     });
     sphere_list.push(Sphere {
         centre: Point3f { x: 4.0, y: 1.0, z: 0.0},
         radius: large_radius,
         material: Material::make_metal(
-            Vec3 { e: [0.7, 0.6, 0.5]},
+            Colour { r: 0.7, g: 0.6, b: 0.5 },
             0.0,
         )
     });
 
-    let distance_filter = Vec3 { e : [4.0, 0.2, 0.0]};
+    let distance_filter = Point3f { x: 4.0, y: 0.2, z: 0.0 };
 
     for a in -11..11 {
         for b in -11..11 {
@@ -87,26 +89,28 @@ fn final_weekend(aspect : f32) -> Scene {
                 match chosen_mat {
                     x if x < 0.8 => moving_sphere_list.push(MovingSphere {
                         centre0: centre,
-                        centre1: centre + Vec3{ e: [
-                            0.0, 0.5 * rng.gen::<f64>() as f32, 0.0
-                        ]},
+                        centre1: centre + Vector3f {
+                            x: 0.0,
+                            y: 0.5 * rng.gen::<f64>() as f32,
+                            z: 0.0,
+                        },
                         time0: 0.0,
                         time1: 1.0,
                         radius: 0.2,
-                        material: Material::make_lambertian(Vec3 { e: [
-                            rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
-                            rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
-                            rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
-                        ]}),
+                        material: Material::make_lambertian(Colour {
+                            r: rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
+                            g: rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
+                            b: rng.gen::<f64>() as f32 * rng.gen::<f64>() as f32,
+                        }),
                     }),
                     x if x < 0.95 => sphere_list.push(Sphere {
                         centre: centre,
                         radius: 0.2,
-                        material: Material::make_metal(Vec3 { e: [
-                            0.5 * (1.0 + rng.gen::<f64>() as f32),
-                            0.5 * (1.0 + rng.gen::<f64>() as f32),
-                            0.5 * (1.0 + rng.gen::<f64>() as f32),
-                        ]}, 0.5 * rng.gen::<f64>() as f32),
+                        material: Material::make_metal(Colour {
+                            r: 0.5 * (1.0 + rng.gen::<f64>() as f32),
+                            g: 0.5 * (1.0 + rng.gen::<f64>() as f32),
+                            b: 0.5 * (1.0 + rng.gen::<f64>() as f32),
+                        }, 0.5 * rng.gen::<f64>() as f32),
                     }),
                     _ => sphere_list.push(Sphere {
                         centre: centre,
