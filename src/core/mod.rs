@@ -26,6 +26,9 @@ pub use self::normal::{
     Normal3T,
 };
 
+mod colour;
+pub use self::colour::Colour;
+
 use std::ops::{
     Add,
     Mul,
