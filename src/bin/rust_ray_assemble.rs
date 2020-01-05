@@ -6,7 +6,6 @@ use clap::{Arg, App};
 extern crate rust_ray_tracing;
 
 use rust_ray_tracing::render::RenderResult;
-// use rust_ray_tracing::vector::Vec3;
 use rust_ray_tracing::core::Colour;
 
 

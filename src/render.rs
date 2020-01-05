@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-// use crate::vector::Vec3;
 use crate::core::Colour;
 
 

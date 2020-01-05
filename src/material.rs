@@ -11,7 +11,6 @@ use crate::core::{
     reflect,
     refract,
 };
-use crate::vector::Vec3;
 
 use crate::ray::Ray;
 

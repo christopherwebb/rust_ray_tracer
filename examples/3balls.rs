@@ -14,7 +14,6 @@ use rust_ray_tracing::core::{
 use rust_ray_tracing::camera::Camera;
 use rust_ray_tracing::scene::{HitList, Scene};
 use rust_ray_tracing::material::Material;
-use rust_ray_tracing::vector::Vec3;
 use rust_ray_tracing::shapes::base::Hitable;
 use rust_ray_tracing::shapes::cylinder::Cylinder;
 use rust_ray_tracing::shapes::sphere::{Sphere, MovingSphere};

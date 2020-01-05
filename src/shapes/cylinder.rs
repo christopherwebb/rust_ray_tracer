@@ -14,7 +14,6 @@ use crate::material::{
 };
 use crate::ray::Ray;
 use crate::shapes::base::{solve_quadratic, Hitable};
-// use crate::vector::Vec3;
 
 
 #[derive(Serialize, Deserialize, Copy, Clone)]
