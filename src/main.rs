@@ -21,7 +21,7 @@ mod vector;
 mod core;
 
 
-use crate::core::{Point3f, Normal3f};
+use crate::core::{Point3f, Normal3f, Colour};
 use crate::material::{
     Material,
     MaterialHit,
@@ -34,7 +34,7 @@ use crate::scene::HitList;
 use crate::vector::Vec3;
 
 
-fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
+fn colour(ray : &Ray, world: &HitList, depth : i32) -> Colour {
     let mut hit_rec : HitRecord = HitRecord {
             t: 10000.0,
             p: Point3f { x: 0.0, y: 0.0, z: 0.0 },
@@ -44,12 +44,12 @@ fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
 
     if world.hit(ray, 0.001, 100000.0, &mut hit_rec) {
         if depth >= 50 {
-            return Vec3 { e: [0.0, 0.0, 0.0]};
+            return Colour { r: 0.0, g: 0.0, b: 0.0 };
         }
 
         let scatter_result : MaterialHit = hit_rec.material.scatter(&ray, &hit_rec);
         if !scatter_result.hit {
-            return Vec3 { e: [0.0, 0.0, 0.0]};
+            return Colour { r: 0.0, g: 0.0, b: 0.0 };
         }
 
         return scatter_result.atten * colour(&scatter_result.ray_out, world, depth + 1);
@@ -57,7 +57,7 @@ fn colour(ray : &Ray, world: &HitList, depth : i32) -> Vec3 {
 
     let unit_dir = ray.direction().unit_vector();
     let t : f32 = 0.5 * (unit_dir.y + 1.0);
-    (1.0 - t) * Vec3 { e: [1.0, 1.0, 1.0]} + t * Vec3 { e: [0.5, 0.7, 1.0]}
+    (1.0 - t) * Colour { r: 1.0, g: 1.0, b: 1.0 } + t * Colour { r: 0.5, g: 0.7, b: 1.0 }
 }
 
 fn sample_range(

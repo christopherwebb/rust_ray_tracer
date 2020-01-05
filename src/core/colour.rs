@@ -121,6 +121,54 @@ impl SubAssign for Colour {
     }
 }
 
+impl Mul for Colour {
+    type Output = Colour;
+
+    fn mul(self, _rhs: Colour) -> Colour {
+        Colour {
+            r: self.r * _rhs.r,
+            g: self.g * _rhs.g,
+            b: self.b * _rhs.b,
+        }
+    }
+}
+
+impl Mul<&Colour> for Colour {
+    type Output = Colour;
+
+    fn mul(self, _rhs: &Colour) -> Colour {
+        Colour {
+            r: self.r * _rhs.r,
+            g: self.g * _rhs.g,
+            b: self.b * _rhs.b,
+        }
+    }
+}
+
+impl Mul for &Colour {
+    type Output = Colour;
+
+    fn mul(self, _rhs: &Colour) -> Colour {
+        Colour {
+            r: self.r * _rhs.r,
+            g: self.g * _rhs.g,
+            b: self.b * _rhs.b,
+        }
+    }
+}
+
+// impl Mul<&Colour> for &Colour {
+//     type Output = Colour;
+
+//     fn mul(self, _rhs: &Colour) -> Colour {
+//         Colour {
+//             r: self.r * _rhs.r,
+//             g: self.g * _rhs.g,
+//             b: self.b * _rhs.b,
+//         }
+//     }
+// }
+
 impl Mul<f32> for Colour {
     type Output = Colour;
 
@@ -138,6 +186,32 @@ impl MulAssign<f32> for Colour {
         self.r *= _rhs;
         self.g *= _rhs;
         self.b *= _rhs;
+    }
+}
+
+
+impl Mul<Colour> for f32 {
+    type Output = Colour;
+
+    fn mul(self, _rhs: Colour) -> Colour {
+        Colour {
+            r: self * _rhs.r,
+            g: self * _rhs.g,
+            b: self * _rhs.b,
+        }
+    }
+}
+
+
+impl Mul<&Colour> for f32 {
+    type Output = Colour;
+
+    fn mul(self, _rhs: &Colour) -> Colour {
+        Colour {
+            r: self * _rhs.r,
+            g: self * _rhs.g,
+            b: self * _rhs.b,
+        }
     }
 }
 

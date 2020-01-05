@@ -6,6 +6,7 @@ use crate::core::{
     Point3f,
     Vector3f,
     Normal3f,
+    Colour,
     dot_vn,
     reflect,
     refract,
@@ -32,7 +33,7 @@ enum MaterialType {
 
 pub struct MaterialHit {
     pub hit : bool,
-    pub atten: Vec3,
+    pub atten: Colour,
     pub ray_out: Ray,
     // material : Material,
 }
@@ -40,7 +41,7 @@ pub struct MaterialHit {
 #[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct Material {
     mat_type : MaterialType,
-    albedo : Vec3,
+    albedo : Colour,
     fuzz : f32,
     ref_idx : f32,
 }
@@ -81,7 +82,7 @@ impl Material {
             MaterialType::Dielectric => {
                 let reflected = reflect(&ray_in.direction(), &hit.normal);
 
-                let atten : Vec3 = Vec3 {e: [1.0, 1.0, 1.0]};
+                let atten = Colour { r: 1.0, g: 1.0, b: 1.0 };
 
                 let dot_prod : f32 = dot_vn(&ray_in.direction(), &hit.normal);
                 let (outward_normal, ni_over_nt, cosine) =
@@ -141,7 +142,7 @@ impl Material {
         r0_sqr + (1.0 - r0_sqr) * (1.0 - cosine).powf(5.0)
     }
 
-    pub fn make_lambertian(albedo: Vec3) -> Material {
+    pub fn make_lambertian(albedo: Colour) -> Material {
         Material {
             mat_type: MaterialType::Lambertian,
             albedo: albedo,
@@ -149,7 +150,7 @@ impl Material {
             ref_idx: 0.0,
         }
     }
-    pub fn make_metal(albedo: Vec3, fuzz: f32) -> Material {
+    pub fn make_metal(albedo: Colour, fuzz: f32) -> Material {
         Material {
             mat_type: MaterialType::Metal,
             albedo: albedo,
@@ -160,7 +161,7 @@ impl Material {
     pub fn make_dielectric(ref_idx: f32) -> Material {
         Material {
             mat_type: MaterialType::Dielectric,
-            albedo: Vec3 {e: [0.0, 0.0, 0.0]},
+            albedo: Colour { r: 0.0, g: 0.0, b: 0.0 },
             fuzz: 0.0,
             ref_idx: ref_idx,
         }
@@ -168,7 +169,7 @@ impl Material {
     pub fn make_dummy_material() -> Material {
         Material {
             mat_type: MaterialType::Metal,
-            albedo: Vec3 {e: [0.0, 0.0, 0.0]},
+            albedo: Colour { r: 0.0, g: 0.0, b: 0.0 },
             fuzz: 0.0,
             ref_idx: 0.0,
         }

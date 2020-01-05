@@ -6,7 +6,9 @@ use clap::{Arg, App};
 extern crate rust_ray_tracing;
 
 use rust_ray_tracing::render::RenderResult;
-use rust_ray_tracing::vector::Vec3;
+// use rust_ray_tracing::vector::Vec3;
+use rust_ray_tracing::core::Colour;
+
 
 fn main() {
     let matches = App::new("Ray Tracer")
@@ -51,15 +53,15 @@ fn main() {
     println!("P3\n{} {}\n255", n_x, n_y);
     for y_results in sorted_results {
         for pixel_results in y_results {
-            let mut col_sum = Vec3 { e: [0.0, 0.0, 0.0]};
+            let mut col_sum = Colour { r: 0.0, g: 0.0, b: 0.0 };
             for result in &pixel_results {
                 col_sum += result.colour;
             }
-            let col : Vec3 = col_sum / pixel_results.len() as f32;
+            let col = col_sum / pixel_results.len() as f32;
 
-            let ir = (255.99 * col.r()) as u64;
-            let ig = (255.99 * col.g()) as u64;
-            let ib = (255.99 * col.b()) as u64;
+            let ir = (255.99 * col.r) as u64;
+            let ig = (255.99 * col.g) as u64;
+            let ib = (255.99 * col.b) as u64;
 
             println!("{} {} {}", ir, ig, ib);
         }
