@@ -26,6 +26,23 @@ pub use self::normal::{
     Normal3T,
 };
 
+mod matrix;
+pub use self::matrix::{
+    Matrix4x4i,
+    Matrix4x4f,
+    indentity,
+};
+
+mod transforms;
+pub use self::transforms::{
+    Transform,
+    gen_translate,
+    gen_scale,
+    gen_rotate_x,
+    gen_rotate_y,
+    gen_rotate_z,
+};
+
 mod colour;
 pub use self::colour::Colour;
 
