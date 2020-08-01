@@ -72,6 +72,8 @@ mod tests {
         Matrix4x4f,
         // dot_vv,
         indentity,
+        gen_scale,
+        gen_translate,
     };
 
     use crate::ray::Ray;
@@ -182,10 +184,7 @@ mod tests {
             20.0,
         );
 
-        match result_option {
-            Some(result) => assert!(false),
-            None => (),
-        }
+        assert_eq!(result_option.is_none(), true);
     }
 
     // Scenario: A ray originates inside a sphere
@@ -233,11 +232,139 @@ mod tests {
     //     And xs[0] = -6.0
     //     And xs[1] = -4.0
 
-    // Scenario: Intersect sets the object on the intersection
+    // Scenario: Intersecting a scaled sphere with a ray
     //   Given r ← ray(point(0, 0, -5), vector(0, 0, 1))
     //     And s ← sphere()
-    //   When xs ← intersect(s, r)
+    //   When set_transform(s, scaling(2, 2, 2))
+    //     And xs ← intersect(s, r)
     //   Then xs.count = 2
-    //     And xs[0].object = s
-    //     And xs[1].object = s
+    //     And xs[0].t = 3
+    //     And xs[1].t = 7
+    #[test]
+    fn scaled_sphere() {
+        let sphere = Sphere {radius: 1.0};
+        let transform = gen_scale(2.0, 2.0, 2.0);
+
+        let result_option = sphere.collide(
+            Ray {
+                a: Point3f {
+                    x:  0.0,
+                    y:  0.0,
+                    z: -5.0,
+                },
+                b: Vector3f {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 1.0,
+                },
+                time: 0.0,
+            },
+            transform.m,
+            transform.m_inv,
+            0.0,
+            20.0,
+        );
+
+        match result_option {
+            Some(result) => assert_eq!(result.t, 3.0),
+            None => assert!(false),
+        }
+    }
+
+    // Scenario: Intersecting a translated sphere with a ray
+    //   Given r ← ray(point(0, 0, -5), vector(0, 0, 1))
+    //     And s ← sphere()
+    //   When set_transform(s, translation(5, 0, 0))
+    //     And xs ← intersect(s, r)
+    //   Then xs.count = 0
+    #[test]
+    fn translated_missed_sphere() {
+        let sphere = Sphere {radius: 1.0};
+        let transform = gen_translate(Vector3f{
+            x: 5.0,
+            y: 0.0,
+            z: 0.0,
+        });
+
+        let result_option = sphere.collide(
+            Ray {
+                a: Point3f {
+                    x:  0.0,
+                    y:  0.0,
+                    z: -5.0,
+                },
+                b: Vector3f {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 1.0,
+                },
+                time: 0.0,
+            },
+            transform.m,
+            transform.m_inv,
+            0.0,
+            20.0,
+        );
+
+        assert_eq!(result_option.is_none(), true);
+    }
+
+    // Scenario: Intersecting a translated sphere with a ray
+    //   Given r ← ray(point(0, 0, -5), vector(0, 0, 1))
+    //     And s ← sphere()
+    //   When set_transform(s, translation(5, 0, 0))
+    //     And xs ← intersect(s, r)
+    //   Then xs.count = 0
+    #[test]
+    fn translated_sphere() {
+        let sphere = Sphere {radius: 1.0};
+        let transform = gen_translate(Vector3f{
+            x: 5.0,
+            y: 0.0,
+            z: 0.0,
+        });
+
+        let result_option = sphere.collide(
+            Ray {
+                a: Point3f {
+                    x:  -5.0,
+                    y:   0.0,
+                    z:   0.0,
+                },
+                b: Vector3f {
+                    x: 1.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                time: 0.0,
+            },
+            transform.m,
+            transform.m_inv,
+            0.0,
+            20.0,
+        );
+
+        match result_option {
+            Some(result) => assert_eq!(result.t, 9.0),
+            None => assert!(false),
+        }
+    }
+
+    // Scenario: The normal on a sphere at a nonaxial point
+    //   Given s ← sphere()
+    //   When n ← normal_at(s, point(√3/3, √3/3, √3/3))
+    //   Then n = vector(√3/3, √3/3, √3/3)
+
+    //   Scenario: Computing the normal on a translated sphere
+    //   Given s ← sphere()
+    //     And set_transform(s, translation(0, 1, 0))
+    //   When n ← normal_at(s, point(0, 1.70711, -0.70711))
+    //   Then n = vector(0, 0.70711, -0.70711)
+
+    // Scenario: Computing the normal on a transformed sphere
+    //   Given s ← sphere()
+    //     And m ← scaling(1, 0.5, 1) * rotation_z(π/5)
+    //     And set_transform(s, m)
+    //   When n ← normal_at(s, point(0, √2/2, -√2/2))
+    //   Then n = vector(0, 0.97014, -0.24254)
 }

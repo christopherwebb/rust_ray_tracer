@@ -11,6 +11,12 @@ use std::ops::{
 };
 use std::clone::Clone;
 
+use crate::core::{
+    Normal3f,
+    Point3f,
+    Vector3f,
+};
+
 
 #[derive(Clone, Copy, Debug)]
 pub struct Matrix4x4<T> {
@@ -77,5 +83,43 @@ impl Mul for Matrix4x4f {
                 ],
             ]
         }
+    }
+}
+
+impl Mul<Point3f> for Matrix4x4f {
+    type Output = Point3f;
+
+    fn mul(self, _rhs: Point3f) -> Point3f {
+        Point3f {
+            x: self.m[0][0] * _rhs.x + self.m[0][1] * _rhs.y + self.m[0][2] * _rhs.z + self.m[0][3],
+            y: self.m[1][0] * _rhs.x + self.m[1][1] * _rhs.y + self.m[1][2] * _rhs.z + self.m[1][3],
+            z: self.m[2][0] * _rhs.x + self.m[2][1] * _rhs.y + self.m[2][2] * _rhs.z + self.m[2][3],
+        }
+
+    }
+}
+
+impl Mul<Vector3f> for Matrix4x4f {
+    type Output = Vector3f;
+
+    fn mul(self, _rhs: Vector3f) -> Vector3f {
+        Vector3f {
+            x: self.m[0][0] * _rhs.x + self.m[0][1] * _rhs.y + self.m[0][2] * _rhs.z,
+            y: self.m[1][0] * _rhs.x + self.m[1][1] * _rhs.y + self.m[1][2] * _rhs.z,
+            z: self.m[2][0] * _rhs.x + self.m[2][1] * _rhs.y + self.m[2][2] * _rhs.z,
+        }
+    }
+}
+
+impl Mul<Normal3f> for Matrix4x4f {
+    type Output = Normal3f;
+
+    fn mul(self, _rhs: Normal3f) -> Normal3f {
+        Normal3f {
+            x: self.m[0][0] * _rhs.x + self.m[0][1] * _rhs.y + self.m[0][2] * _rhs.z,
+            y: self.m[1][0] * _rhs.x + self.m[1][1] * _rhs.y + self.m[1][2] * _rhs.z,
+            z: self.m[2][0] * _rhs.x + self.m[2][1] * _rhs.y + self.m[2][2] * _rhs.z,
+        }
+
     }
 }

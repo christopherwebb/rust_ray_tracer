@@ -2,6 +2,12 @@ use crate::material::HitRecord;
 
 use crate::ray::Ray;
 
+use crate::core::{
+    Point3f,
+    Matrix4x4f,
+    Normal3f,
+};
+
 pub trait Hitable {
     fn hit(
         &self,
@@ -10,6 +16,23 @@ pub trait Hitable {
         t_max: f32,
         rec: &mut HitRecord
     ) -> bool;
+}
+
+pub struct Interaction {
+    pub t : f32,
+    pub p : Point3f,
+    pub normal : Normal3f,
+}
+
+pub trait ShapeTrait {
+    fn collide(
+        &self,
+        ray: Ray,
+        object_to_world: Matrix4x4f,
+        world_to_object: Matrix4x4f,
+        t_min: f32,
+        t_max: f32,
+    ) -> Option<Interaction>;
 }
 
 pub fn solve_quadratic(a: f32, b: f32, c: f32) -> (bool, f32, f32) {
