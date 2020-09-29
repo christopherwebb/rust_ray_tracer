@@ -116,7 +116,22 @@ impl Mul<Normal3f> for Matrix4x4f {
 
 impl PartialEq for Matrix4x4f {
     fn eq(&self, rhs: &Matrix4x4f) -> bool {
-        unimplemented!()
+        self.m[0][0] == rhs.m[0][0] &&
+        self.m[0][1] == rhs.m[0][1] &&
+        self.m[0][2] == rhs.m[0][2] &&
+        self.m[0][3] == rhs.m[0][3] &&
+        self.m[1][0] == rhs.m[1][0] &&
+        self.m[1][1] == rhs.m[1][1] &&
+        self.m[1][2] == rhs.m[1][2] &&
+        self.m[1][3] == rhs.m[1][3] &&
+        self.m[2][0] == rhs.m[2][0] &&
+        self.m[2][1] == rhs.m[2][1] &&
+        self.m[2][2] == rhs.m[2][2] &&
+        self.m[2][3] == rhs.m[2][3] &&
+        self.m[3][0] == rhs.m[3][0] &&
+        self.m[3][1] == rhs.m[3][1] &&
+        self.m[3][2] == rhs.m[3][2] &&
+        self.m[3][3] == rhs.m[3][3]
     }
 }
 
