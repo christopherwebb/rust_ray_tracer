@@ -1,14 +1,5 @@
-use std::ops::{
-    // Add,
-    // AddAssign,
-    // Neg,
-    // Sub,
-    // SubAssign,
-    Mul,
-    // MulAssign,
-    // Div,
-    // DivAssign,
-};
+use std::ops::Mul;
+use std::cmp::PartialEq;
 use std::clone::Clone;
 
 use crate::core::{
@@ -20,7 +11,6 @@ use crate::core::{
 
 #[derive(Clone, Copy, Debug)]
 pub struct Matrix4x4<T> {
-    // pub m : T[4][4],
     pub m : [[T; 4]; 4],
 }
 
@@ -121,5 +111,52 @@ impl Mul<Normal3f> for Matrix4x4f {
             z: self.m[2][0] * _rhs.x + self.m[2][1] * _rhs.y + self.m[2][2] * _rhs.z,
         }
 
+    }
+}
+
+impl PartialEq for Matrix4x4f {
+    fn eq(&self, rhs: &Matrix4x4f) -> bool {
+        unimplemented!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::core::Matrix4x4f;
+
+    // Scenario: Transposing a matrix
+    //   Given the following matrix A:
+    //     | 0 | 9 | 3 | 0 |
+    //     | 9 | 8 | 0 | 8 |
+    //     | 1 | 8 | 5 | 3 |
+    //     | 0 | 0 | 5 | 8 |
+    //   Then transpose(A) is the following matrix:
+    //     | 0 | 9 | 1 | 0 |
+    //     | 9 | 8 | 8 | 0 |
+    //     | 3 | 0 | 5 | 5 |
+    //     | 0 | 8 | 3 | 8 |
+    #[test]
+    fn tranpose() {
+        let m = Matrix4x4f { m:
+            [
+                [0.0, 9.0, 3.0, 0.0],
+                [9.0, 8.0, 0.0, 8.0],
+                [1.0, 8.0, 5.0, 3.0],
+                [0.0, 0.0, 5.0, 8.0],
+            ]
+        };
+
+        let transposed = m.transpose();
+        assert_eq!(
+            transposed,
+            Matrix4x4f { m:
+                [
+                    [0.0, 9.0, 1.0, 0.0],
+                    [9.0, 8.0, 8.0, 0.0],
+                    [3.0, 0.0, 5.0, 5.0],
+                    [0.0, 8.0, 3.0, 8.0],
+                ]
+            }
+        );
     }
 }
