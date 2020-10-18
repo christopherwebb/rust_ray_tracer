@@ -1,4 +1,7 @@
 use std::ops::Mul;
+
+use serde::{Deserialize, Serialize};
+
 use crate::core::{
     Point3f,
     Vector3f,
@@ -6,6 +9,7 @@ use crate::core::{
 };
 
 
+#[derive(Serialize, Deserialize, Copy, Clone)]
 pub struct Ray {
     pub a : Point3f,
     pub b : Vector3f,
