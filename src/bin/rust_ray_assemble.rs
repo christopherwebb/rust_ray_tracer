@@ -56,7 +56,11 @@ fn main() {
             for result in &pixel_results {
                 col_sum += result.colour;
             }
-            let col = col_sum / pixel_results.len() as f32;
+
+            let col = match pixel_results.len() {
+              0 => col_sum,
+              _ => col_sum / pixel_results.len() as f32,
+            };
 
             let ir = (255.99 * col.r) as u64;
             let ig = (255.99 * col.g) as u64;
