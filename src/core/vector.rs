@@ -9,6 +9,7 @@ use std::ops::{
     Div,
     DivAssign,
 };
+use std::cmp::PartialEq;
 
 use std::clone::Clone;
 
@@ -66,13 +67,13 @@ impl Vector3f {
 
     pub fn rnd_in_unit_sphere() -> Self {
         let mut rng = thread_rng();
-        let sub = Self { x: 1.0, y: 1.0, z: 1.0 };
+        let sub = Self { x: 1.0, y: 1.0, z: 0.0 };
 
         loop {
             let x = 2.0 * Self {
                 x: rng.gen::<f64>() as f32,
                 y: rng.gen::<f64>() as f32,
-                z: rng.gen::<f64>() as f32,
+                z: 0.0,
             } - sub;
             if x.squared_length() < 1.0 {
                 break x;
@@ -82,7 +83,7 @@ impl Vector3f {
 
     pub fn rnd_in_unit_disc() -> Self {
         let mut rng = thread_rng();
-        let sub = Self { x: 1.0, y: 1.0, z: 1.0 };
+        let sub = Self { x: 1.0, y: 1.0, z: 0.0 };
 
         loop {
             let p = 2.0 * Self {
@@ -406,7 +407,13 @@ impl From<&Vec3> for Vector3f {
     }
 }
 
-
+impl PartialEq for Vector3f {
+    fn eq(&self, rhs: &Vector3f) -> bool {
+        self.x == rhs.x &&
+        self.y == rhs.y &&
+        self.z == rhs.z
+    }
+}
 
 
 // impl Div for Vector3f {

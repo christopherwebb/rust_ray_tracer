@@ -9,6 +9,7 @@ use std::ops::{
     Div,
     DivAssign,
 };
+use std::cmp::PartialEq;
 
 use std::clone::Clone;
 use serde::{Deserialize, Serialize};
@@ -276,5 +277,13 @@ impl From<&Vec3> for Normal3f {
             y: from.y(),
             z: from.z(),
         }
+    }
+}
+
+impl PartialEq for Normal3f {
+    fn eq(&self, rhs: &Normal3f) -> bool {
+        self.x == rhs.x &&
+        self.y == rhs.y &&
+        self.z == rhs.z
     }
 }

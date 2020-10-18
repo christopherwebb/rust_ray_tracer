@@ -4,6 +4,7 @@ use std::ops::{
     Sub,
     SubAssign,
 };
+use std::cmp::PartialEq;
 
 use std::clone::Clone;
 use serde::{Deserialize, Serialize};
@@ -396,7 +397,13 @@ impl SubAssign<&Vector3f> for Point3f {
     }
 }
 
-
+impl PartialEq for Point3f {
+    fn eq(&self, rhs: &Point3f) -> bool {
+        self.x == rhs.x &&
+        self.y == rhs.y &&
+        self.z == rhs.z
+    }
+}
 
 // Vector3<T> operator-(const Point3<T> &p) const {
 //     return Vector3<T>(x - p.x, y - p.y, z - p.z);

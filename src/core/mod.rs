@@ -41,6 +41,7 @@ pub use self::transforms::{
     gen_rotate_x,
     gen_rotate_y,
     gen_rotate_z,
+    gen_rotate,
 };
 
 mod colour;

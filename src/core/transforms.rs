@@ -2,6 +2,7 @@ use crate::core::matrix::Matrix4x4f as Matrix;
 use crate::core::vector::Vector3f;
 use std::ops::Mul;
 
+#[derive(Clone, Copy)]
 pub struct Transform {
     pub m: Matrix,
     pub m_inv: Matrix,
