@@ -18,6 +18,7 @@ pub trait Hitable {
     ) -> bool;
 }
 
+#[derive(Copy, Clone)]
 pub struct Interaction {
     pub t : f32,
     pub p : Point3f,

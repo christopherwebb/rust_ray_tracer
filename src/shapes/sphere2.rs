@@ -5,13 +5,14 @@ use crate::core::{
     Point3f,
     Matrix4x4f,
     dot_vv,
+    dot_vn,
 };
 
 use crate::ray::Ray;
 use crate::shapes::base::{Interaction, ShapeTrait};
 
-
-struct Sphere {
+#[derive(Serialize, Deserialize, Copy, Clone)]
+pub struct Sphere {
     pub radius: f32,
 }
 
@@ -26,20 +27,25 @@ impl ShapeTrait for Sphere {
     ) -> Option<Interaction> {
         let t_ray = world_to_object * ray;
         let ray_o = t_ray.origin();
+        // let ray_d = t_ray.direction().unit_vector();
         let ray_d = t_ray.direction();
 
         // let direction_dot = ray.direction();
         let a: f32 = dot_vv(&ray_d, &ray_d);
-        let b: f32 = ray_o.x * ray_d.x + ray_o.y * ray_d.y + ray_o.z * ray_d.z;
+        let half_b: f32 = ray_o.x * ray_d.x + ray_o.y * ray_d.y + ray_o.z * ray_d.z;
+        // let half_b: f32 = dot_vn(&ray_o, &ray_d);
         let c: f32 = ray_o.x * ray_o.x + ray_o.y * ray_o.y + ray_o.z * ray_o.z - self.radius * self.radius;
+        // let c: f32 = ray_o.squared_length() - self.radius * self.radius;
 
-        let discriminant : f32 = b * b - a * c;
+        let discriminant : f32 = half_b * half_b - a * c;
 
         if discriminant < 0.0 {
             return None;
         }
 
-        let temp: f32 = (-b - (b * b - a * c).sqrt()) / a;
+        let root = discriminant.sqrt();
+
+        let temp: f32 = (-half_b - root) / a;
         if temp > t_min && temp < t_max {
             let interaction_point =  t_ray.point_at_parameter(temp);
             return Some(Interaction {
@@ -49,7 +55,7 @@ impl ShapeTrait for Sphere {
             });
         }
 
-        let temp2: f32 = (-b + (b * b - a * c).sqrt()) / a;
+        let temp2: f32 = (-half_b + root) / a;
         if temp2 > t_min && temp2 < t_max {
             let interaction_point =  t_ray.point_at_parameter(temp2);
             return Some(Interaction {
@@ -65,15 +71,17 @@ impl ShapeTrait for Sphere {
 
 #[cfg(test)]
 mod tests {
+    use std::f32;
     use crate::core::{
-        // Normal3f,
         Point3f,
         Vector3f,
-        Matrix4x4f,
-        // dot_vv,
         indentity,
         gen_scale,
         gen_translate,
+        gen_rotate,
+        gen_rotate_x,
+        gen_rotate_y,
+        gen_rotate_z,
     };
 
     use crate::ray::Ray;
@@ -112,10 +120,7 @@ mod tests {
             20.0,
         );
 
-        match result_option {
-            Some(result) => assert_eq!(result.t, 4.0),
-            None => assert!(false),
-        }
+        assert_eq!(result_option.unwrap().t, 4.0);
     }
 
     // Scenario: A ray intersects a sphere at a tangent
@@ -145,14 +150,11 @@ mod tests {
             },
             indentity(),
             indentity(),
-            0.0,
-            20.0,
+            4.999,
+            5.001,
         );
 
-        match result_option {
-            Some(result) => assert_eq!(result.t, 5.0),
-            None => assert!(false),
-        }
+        assert_eq!(result_option.unwrap().t, 5.0);
     }
 
     // Scenario: A ray misses a sphere
@@ -243,32 +245,40 @@ mod tests {
     #[test]
     fn scaled_sphere() {
         let sphere = Sphere {radius: 1.0};
-        let transform = gen_scale(2.0, 2.0, 2.0);
+        let transform = gen_scale(6.0, 6.0, 6.0);
 
-        let result_option = sphere.collide(
-            Ray {
-                a: Point3f {
-                    x:  0.0,
-                    y:  0.0,
-                    z: -5.0,
-                },
-                b: Vector3f {
+        let camera_a = Point3f {
+                    x: -25.0,
+                    y: -25.0,
+                    z: -25.0,
+                };
+        let look_at = Point3f {
                     x: 0.0,
                     y: 0.0,
-                    z: 1.0,
-                },
+                    z: 0.0,
+                } - camera_a;
+
+        let ray = Ray {
+                a: camera_a,
+                b: look_at,
                 time: 0.0,
-            },
+            };
+
+        let val_1 = (43.301270189221932 - 6.0) / look_at.length();
+        let original_t_min = 0.99 * val_1;
+        let original_t_max = 1.01 * val_1;
+
+        // let updated_b = transform.m_inv * ray.b;
+
+        let result_option = sphere.collide(
+            ray,
             transform.m,
             transform.m_inv,
-            0.0,
-            20.0,
+            original_t_min,
+            original_t_max,
         );
 
-        match result_option {
-            Some(result) => assert_eq!(result.t, 3.0),
-            None => assert!(false),
-        }
+        result_option.unwrap();
     }
 
     // Scenario: Intersecting a translated sphere with a ray
@@ -348,6 +358,120 @@ mod tests {
             Some(result) => assert_eq!(result.t, 9.0),
             None => assert!(false),
         }
+    }
+
+    #[test]
+    fn rotated_sphere() {
+        let sphere = Sphere {radius: 1.0};
+
+        let transform = gen_rotate_x(0.0) * gen_rotate_y(0.0) * gen_rotate_z(0.0);
+
+        let result_option = sphere.collide(
+            Ray {
+                a: Point3f {
+                    x:  0.0,
+                    y:  0.0,
+                    z: -5.0,
+                },
+                b: Vector3f {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 1.0,
+                },
+                time: 0.0,
+            },
+            transform.m,
+            transform.m_inv,
+            0.0,
+            20.0,
+        );
+
+        match result_option {
+            Some(result) => assert_eq!(result.t, 4.0),
+            None => assert!(false),
+        }
+    }
+
+    #[test]
+    fn moved_then_rotated_sphere() {
+        let sphere = Sphere {radius: 1.0};
+
+        let translation = gen_translate(Vector3f{
+            x: 25.0,
+            y: 0.0,
+            z: 0.0,
+        });
+        let rotation = gen_rotate_z(0.5 * f32::consts::PI);
+        let transform = rotation * translation;
+
+        let result_option = sphere.collide(
+            Ray {
+                a: Point3f {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                b: Vector3f {
+                    x: 0.0,
+                    y: 1.0,
+                    z: 0.0,
+                },
+                time: 0.0,
+            },
+            transform.m,
+            transform.m_inv,
+            0.0,
+            50.0,
+        );
+
+        assert_eq!(result_option.unwrap().t, 24.0);
+    }
+
+    #[test]
+    fn moved_then_axis_rotated_sphere() {
+        let sphere = Sphere {radius: 1.0};
+
+        let translation = gen_translate(Vector3f{
+            x: 25.0,
+            y: 0.0,
+            z: 0.0,
+        });
+        let rotation = gen_rotate(0.5 * f32::consts::PI, Vector3f {x: 1.0, y: 1.0, z: 0.0});
+        let transform = rotation * translation;
+
+        let x_pos = 12.5f32;
+        let y_pos = 12.5f32;
+        let z_pos = -(2.0f32 * x_pos.powi(2)).sqrt();
+        let look_at = Vector3f {
+                    x: x_pos,
+                    y: y_pos,
+                    z: z_pos,
+                };
+
+        let look_at_l = look_at.length();
+        let t_val = (look_at_l - 1.0) / look_at_l;
+
+        let centre = transform.m * Point3f{x: 0.0, y: 0.0, z: 0.0};
+        println!("Hypothetical centre: x:{0}, y:{1}, z:{2}", centre.x, centre.y, centre.z);
+        println!("We are aiming at: x:{0}, y:{1}, z:{2}", x_pos, y_pos, z_pos);
+
+        let result_option = sphere.collide(
+            Ray {
+                a: Point3f {
+                    x: 0.0,
+                    y: 0.0,
+                    z: 0.0,
+                },
+                b: look_at,
+                time: 0.0,
+            },
+            transform.m,
+            transform.m_inv,
+            t_val * 0.99,
+            t_val * 1.01,
+        );
+
+        result_option.unwrap();
     }
 
     // Scenario: The normal on a sphere at a nonaxial point
