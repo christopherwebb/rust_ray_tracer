@@ -232,8 +232,8 @@ fn main() {
 
     let started = Instant::now();
 
-    // let NTHREADS = num_cpus::get() as u32;
-    let NTHREADS = 1 as u32;
+    let NTHREADS = num_cpus::get() as u32;
+    eprintln!("{} Running with {} processor(s)...", style("[1/2]").bold().dim(), NTHREADS);
 
     let n_x : u32 = matches.value_of("width").unwrap().parse::<u32>().unwrap();
     let n_y : u32 = matches.value_of("height").unwrap().parse::<u32>().unwrap();
@@ -267,10 +267,6 @@ fn main() {
         ProgressStyle::default_bar()
         .template("{spinner:.green} {elapsed_precise} {bar:40.cyan/blue} {pos}/{len}")
     );
-    // eprintln!(
-    //     "{} No really starting...",
-    //     style("[3/2]").bold().dim(),
-    // );
 
     // let mut colour_results: Vec<RenderResult> = vec![];
     // for y_coord in (0..n_y).rev() {
@@ -332,7 +328,7 @@ fn main() {
     //     println!("{}", serialized);
     // }
 
-    let ray_results : Vec<RenderResult> = vec![];
+    let mut ray_results : Vec<RenderResult> = vec![];
     for y_coord in (0..n_y).rev() {
         for x_coord in 0..n_x {
             let mut handles = vec![];
@@ -378,8 +374,8 @@ fn main() {
             for received in rx.iter() {
                 pb.inc(1);
                 ray_results.push(received);
-                // let serialized = serde_json::to_string(&received).unwrap();
-                // println!("{}", serialized);
+                let serialized = serde_json::to_string(&received).unwrap();
+                println!("{}", serialized);
             }
         }
     }

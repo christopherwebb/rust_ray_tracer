@@ -48,41 +48,41 @@ impl TransformTrait for SRTTransform {
 
 pub fn three_sphere(time_0: f32, time_1: f32) -> Scene {
     Scene {
-        // primatives: vec![
-        //     Primative {
-        //         shape: Arc::new(Sphere {radius: 1.0}),
-        //         transform: Arc::new(SRTTransform::init(
-        //             Vector3f {x: 0.0, y: 0.0, z: 0.0},
-        //             3.0,
-        //             3.0,
-        //             3.0,
-        //             0.0,
-        //             Vector3f {x: 0.0, y: 1.0, z: 0.0},
-        //         )),
-        //     },
-        //     Primative {
-        //         shape: Arc::new(Sphere {radius: 1.0}),
-        //         transform: Arc::new(SRTTransform::init(
-        //             Vector3f {x: -6.0, y: 0.0, z: 0.0},
-        //             2.0,
-        //             2.0,
-        //             2.0,
-        //             0.0,
-        //             Vector3f {x: 0.0, y: 1.0, z: 0.0},
-        //         )),
-        //     },
-        //     Primative {
-        //         shape: Arc::new(Sphere {radius: 1.0}),
-        //         transform: Arc::new(SRTTransform::init(
-        //             Vector3f {x: 5.0, y: 0.0, z: 0.0},
-        //             1.0,
-        //             1.0,
-        //             1.0,
-        //             0.0,
-        //             Vector3f {x: 0.0, y: 1.0, z: 0.0},
-        //         )),
-        //     },
-        // ],
+        primatives: vec![
+            Primative {
+                shape: Arc::new(Sphere {radius: 1.0}),
+                transform: Arc::new(SRTTransform::init(
+                    Vector3f {x: 0.0, y: 0.0, z: 0.0},
+                    3.0,
+                    3.0,
+                    3.0,
+                    0.0,
+                    Vector3f {x: 0.0, y: 1.0, z: 0.0},
+                )),
+            },
+            Primative {
+                shape: Arc::new(Sphere {radius: 1.0}),
+                transform: Arc::new(SRTTransform::init(
+                    Vector3f {x: -6.0, y: 0.0, z: 0.0},
+                    2.0,
+                    2.0,
+                    2.0,
+                    0.0,
+                    Vector3f {x: 0.0, y: 1.0, z: 0.0},
+                )),
+            },
+            Primative {
+                shape: Arc::new(Sphere {radius: 1.0}),
+                transform: Arc::new(SRTTransform::init(
+                    Vector3f {x: 5.0, y: 0.0, z: 0.0},
+                    1.0,
+                    1.0,
+                    1.0,
+                    0.0,
+                    Vector3f {x: 0.0, y: 1.0, z: 0.0},
+                )),
+            },
+        ],
         camera: Camera::create(
             Point3f {x: 1.5, y: 10.0, z: 10.0},
             Point3f {x: 0.0, y: 0.0, z: 0.0},
