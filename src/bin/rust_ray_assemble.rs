@@ -29,15 +29,22 @@ fn main() {
                .help("Height of image")
                .takes_value(true))
        .get_matches();
-    let n_x : u32 = matches.value_of("width").unwrap().parse::<u32>().unwrap();
-    let n_y : u32 = matches.value_of("height").unwrap().parse::<u32>().unwrap();
+    let n_x: usize = matches.value_of("width").unwrap().parse::<u32>().unwrap() as usize;
+    let n_y: usize = matches.value_of("height").unwrap().parse::<u32>().unwrap() as usize;
 
-    let mut sorted_results : Vec<Vec<Vec<RenderResult>>> = vec![vec![vec![]; n_x as usize]; n_y as usize];
+    let mut sorted_results : Vec<Vec<Vec<RenderResult>>> = vec![vec![vec![]; n_x]; n_y];
 
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
         // println!("{}", line.unwrap());
         let input_ray: RenderResult = serde_json::from_str(&line.unwrap()).unwrap();
+
+        let x_coord = input_ray.x_coord as usize;
+        let y_coord = (n_y as f32 - (input_ray.y_coord + 1.0)) as usize;
+
+        if x_coord < 0 || x_coord >= n_x || y_coord < 0 || y_coord >= n_y {
+          continue
+        }
         sorted_results[(n_y as f32 - (input_ray.y_coord + 1.0)) as usize][input_ray.x_coord as usize].push(input_ray);
     }
     // let mut buffer = String::new();

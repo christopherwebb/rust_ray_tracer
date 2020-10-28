@@ -13,6 +13,7 @@ use console::style;
 
 mod camera;
 mod material;
+mod material2;
 mod ray;
 mod render;
 mod scene;
@@ -346,16 +347,18 @@ fn main() {
                         let rand_x : f32 = rng.gen::<f64>() as f32;
                         let rand_y : f32 = rng.gen::<f64>() as f32;
 
-                        let u: f32 = (rand_x + x_coord as f32) / n_x as f32;
-                        let v: f32 = (rand_y + y_coord as f32) / n_y as f32;
+                        let x_coord_precise = rand_x + x_coord as f32;
+                        let y_coord_precise = rand_y + y_coord as f32;
+
+                        let u: f32 = x_coord_precise / n_x as f32;
+                        let v: f32 = y_coord_precise / n_y as f32;
 
                         let ray = &arc_scene_n.camera.get_ray(u, v);
 
-                        // let colour_result = colour(&ray, &arc_scene_n.hitlist, 0);
                         let colour_result = calculate_colour(&arc_scene_n, ray, 0);
                         let result = RenderResult {
-                            x_coord: rand_x + x_coord as f32,
-                            y_coord: rand_y + y_coord as f32,
+                            x_coord: x_coord_precise,
+                            y_coord: y_coord_precise,
                             time: ray.time,
                             colour: colour_result,
                         };
@@ -387,4 +390,24 @@ fn main() {
     );
 
     // eprintln!()
+}
+
+#[cfg(test)]
+mod main_tests {
+    use rand::thread_rng;
+    use rand::Rng;
+
+    #[test]
+    fn test_coordinate_bounding() {
+        let mut rng = thread_rng();
+        let initial_cord = 2000;
+        for attempt in 0..100000 {
+            let init_coord_f32 = initial_cord as f32;
+            let rnd_f32 = rng.gen::<f64>() as f32;
+            let f32_coord = init_coord_f32 + rnd_f32;
+            let converted_back = f32_coord as usize;
+
+            assert_eq!(converted_back, initial_cord, "Attempt {} converting {:.60} + {:.60} (becomes {:.60}) into int", attempt, init_coord_f32, rnd_f32, f32_coord)
+        }
+    }
 }
