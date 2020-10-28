@@ -4,11 +4,13 @@ use std::sync::Arc;
 use crate::ray::Ray;
 use crate::shapes::base::{Interaction, ShapeTrait};
 use crate::core::Transform;
+use crate::material2::{MaterialTrait, ScatterResult};
+
 
 #[derive(Clone)]
 pub struct Primative {
     pub shape: Arc<dyn ShapeTrait + Send + Sync>,
-    // pub material: Arc<dyn MaterialTrait>,
+    pub material: Arc<dyn MaterialTrait + Send + Sync>,
     pub transform: Arc<dyn TransformTrait + Send + Sync>,
 }
 
@@ -26,9 +28,9 @@ impl Primative {
         interaction_result
     }
 
-    // pub fn scatter(self, ray: Ray, interaction: Interaction) -> ScatterResult {
-    //     self.material.scatter(ray, interaction)
-    // }
+    pub fn scatter(self, ray: &Ray, interaction: &Interaction) -> ScatterResult {
+        self.material.scatter(ray, interaction)
+    }
 }
 
 pub trait TransformTrait {
@@ -40,12 +42,14 @@ pub trait TransformTrait {
 #[cfg(test)]
 mod sphere_tests {
     use std::sync::Arc;
+    use crate::shapes::base::{Interaction, ShapeTrait};
     use crate::primative::{Primative, TransformTrait};
     use crate::shapes::sphere2::Sphere;
     use crate::core::{
         Vector3f,
         Point3f,
         Normal3f,
+        Colour,
         Transform,
         gen_translate,
         gen_scale,
@@ -54,6 +58,7 @@ mod sphere_tests {
         // gen_rotate_z,
         gen_rotate,
     };
+    use crate::material2::{MaterialTrait, ScatterResult};
     use crate::ray::Ray;
 
     struct SRTTransform {
@@ -85,6 +90,21 @@ mod sphere_tests {
         }
     }
 
+    struct DummyMaterial {}
+    impl MaterialTrait for DummyMaterial {
+        fn scatter(&self, ray_in: &Ray, interaction: &Interaction) -> ScatterResult {
+            ScatterResult {
+                hit: false,
+                atten: Colour {r: 0.0, g: 0.0, b: 0.0},
+                ray_out: Ray {
+                    a: Point3f {x: 2.0, y: 0.0, z: 0.0},
+                    b: Vector3f {x: -2.0, y: 0.0, z: 0.0},
+                    time: 0.0,
+                },
+            }
+        }
+    }
+
     #[test]
     fn test_instantiate() {
         let primative = Primative {
@@ -97,6 +117,7 @@ mod sphere_tests {
                 0.0,
                 Vector3f {x: 0.0, y: 1.0, z: 0.0},
             )),
+            material: Arc::new(DummyMaterial {}),
         };
 
         let ray = Ray {
