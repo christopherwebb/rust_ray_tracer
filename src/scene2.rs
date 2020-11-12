@@ -76,10 +76,11 @@ pub fn calculate_colour(scene: &Scene, ray: &Ray, depth: i32) -> Colour {
                 return Colour { r: 0.0, g: 0.0, b: 0.0 };
             }
 
+            let normalised_normal = interaction.interaction.normal.unit_vector();
             0.5 * (Colour {
-                r: interaction.interaction.normal.x,
-                g: interaction.interaction.normal.y,
-                b: interaction.interaction.normal.z,
+                r: normalised_normal.x,
+                g: normalised_normal.y,
+                b: normalised_normal.z,
             } + Colour {r: 1.0, g: 1.0, b: 1.0})
 
             // let prima_clone = scene.primatives[interaction.primative].clone();

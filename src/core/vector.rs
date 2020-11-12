@@ -18,6 +18,8 @@ use rand::Rng;
 
 use serde::{Deserialize, Serialize};
 
+use float_cmp::{ApproxEq, F32Margin};
+
 use crate::vector::Vec3;
 use crate::core::Point3f;
 use crate::core::Normal3f;
@@ -415,6 +417,18 @@ impl PartialEq for Vector3f {
     }
 }
 
+
+impl ApproxEq for Vector3f {
+// impl<'a, M: Copy> ApproxEq for &'a Vector3f {
+    type Margin = F32Margin;
+
+    fn approx_eq<M: Into<Self::Margin>>(self, other: Self, margin: M) -> bool {
+        let margin = margin.into();
+        self.x.approx_eq(other.x, margin)
+            && self.y.approx_eq(other.y, margin)
+            && self.z.approx_eq(other.z, margin)
+   }
+}
 
 // impl Div for Vector3f {
 //     type Output = Vector3f;

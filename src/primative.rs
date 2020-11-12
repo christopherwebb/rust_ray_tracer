@@ -61,6 +61,8 @@ mod sphere_tests {
     use crate::material2::{MaterialTrait, ScatterResult};
     use crate::ray::Ray;
 
+    use float_cmp::approx_eq;
+
     struct SRTTransform {
         scale: Transform,
         rotate: Transform,
@@ -131,4 +133,209 @@ mod sphere_tests {
         assert_eq!(interaction.p, Point3f {x: 1.0, y: 0.0, z: 0.0});
         assert_eq!(interaction.normal, Normal3f {x: 1.0, y: 0.0, z: 0.0});
     }
+
+    #[test]
+    fn test_unit_sphere_normals() {
+        let primative_original = Primative {
+            shape: Arc::new(Sphere {radius: 1.0}),
+            transform: Arc::new(SRTTransform::init(
+                Vector3f {x: 0.0, y: 0.0, z: 0.0},
+                1.0,
+                1.0,
+                1.0,
+                0.0,
+                Vector3f {x: 0.0, y: 1.0, z: 0.0},
+            )),
+            material: Arc::new(DummyMaterial {}),
+        };
+
+        for y in -6..6 {
+            for x in -6..6 {
+                let primative = primative_original.clone();
+
+                let x = (x as f32) / 5.0;
+                let y = (y as f32) / 5.0;
+
+                let ray = Ray {
+                    a: Point3f  {x:   x, y:   y, z:  4.0},
+                    b: Vector3f {x: 0.0, y: 0.0, z: -1.0},
+                    time: 0.0,
+                };
+                let interaction_result = primative.collide(ray, 0.0, 10.0);
+
+                if x * x + y * y > 1.0 {
+                    // miss case
+                    assert!(interaction_result.is_none(), "Expected failure from x:{}, y:{}", x, y);
+                } else {
+                    let interaction = interaction_result.expect(&format!("Expected success from x:{}, y:{}", x, y));
+
+                    let z_squared = (1.0 - x * x - y * y).max(0.0);
+                    let z_point = z_squared.sqrt();
+
+                    let expected = Point3f {x: x, y: y, z: z_point};
+                    assert!(
+                        approx_eq!(Point3f, interaction.p, expected, ulps = 4),
+                        "Point comparison failed - returned {:?} expected {:?} (z squared: {})",
+                        interaction.p,
+                        expected,
+                        z_squared,
+                    );
+
+                    let expected = Normal3f {x: x, y: y, z: z_point};
+                    assert!(
+                        approx_eq!(Normal3f, interaction.normal, expected),
+                        "Normal comparison failed - returned {:?} expected {:?}",
+                        interaction.normal,
+                        expected,
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_regularly_scaled_sphere_normals() {
+        let primative_original = Primative {
+            shape: Arc::new(Sphere {radius: 1.0}),
+            transform: Arc::new(SRTTransform::init(
+                Vector3f {x: 0.0, y: 0.0, z: 0.0},
+                2.0,
+                2.0,
+                2.0,
+                0.0,
+                Vector3f {x: 0.0, y: 1.0, z: 0.0},
+            )),
+            material: Arc::new(DummyMaterial {}),
+        };
+
+        for y in -12..12 {
+            for x in -12..12 {
+                let primative = primative_original.clone();
+
+                let x = (x as f32) / 10.0;
+                let y = (y as f32) / 10.0;
+
+                let ray = Ray {
+                    a: Point3f  {x:   x, y:   y, z:  4.0},
+                    b: Vector3f {x: 0.0, y: 0.0, z: -1.0},
+                    time: 0.0,
+                };
+                let interaction_result = primative.collide(ray, 0.0, 10.0);
+
+                // 1.0 - x * x - y * y
+                if (x * x) / 4.0 + (y * y) / 4.0 > 1.0 {
+                    // miss case
+                    assert!(interaction_result.is_none(), "Expected failure from x:{}, y:{}", x, y);
+                } else {
+                    let interaction = interaction_result.expect(&format!("Expected success from x:{}, y:{}", x, y));
+
+                    let z_squared = (4.0 - x * x - y * y).max(0.0);
+                    let z_point = z_squared.sqrt();
+
+                    // "Expected x:{}, y:{}, z:{} (z squared:{}) for point", x, y, z_point, z_squared
+                    let expected = Point3f {x: x, y: y, z: z_point};
+                    assert!(
+                        approx_eq!(Point3f,  interaction.p, expected, ulps = 4),
+                        "Point comparison failed - returned {:?} expected {:?} (z squared: {})",
+                        interaction.p,
+                        expected,
+                        z_squared,
+                    );
+
+                    let expected_normal = Normal3f {x: x / 4.0, y: y / 4.0, z: z_point / 4.0};
+                    assert!(
+                        approx_eq!(
+                            Normal3f,
+                            interaction.normal.unit_vector(),
+                            expected_normal.unit_vector()
+                        ),
+                        "Normal comparison failed - returned {:?} expected {:?}",
+                        interaction.normal.unit_vector(),
+                        expected_normal.unit_vector(),
+                    );
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_irregularly_scaled_sphere_normals() {
+        let primative_original = Primative {
+            shape: Arc::new(Sphere {radius: 1.0}),
+            transform: Arc::new(SRTTransform::init(
+                Vector3f {x: 0.0, y: 0.0, z: 0.0},
+                4.0,
+                0.5,
+                1.0,
+                0.0,
+                Vector3f {x: 0.0, y: 1.0, z: 0.0},
+            )),
+            material: Arc::new(DummyMaterial {}),
+        };
+
+        for y in -6..7 {
+            for x in -11..11 {
+                let primative = primative_original.clone();
+
+                let x = (x as f32) / 2.5;
+                let y = (y as f32) / 10.0;
+
+                let ray = Ray {
+                    a: Point3f  {x:   x, y:   y, z:  4.0},
+                    b: Vector3f {x: 0.0, y: 0.0, z: -1.0},
+                    time: 0.0,
+                };
+                let interaction_result = primative.collide(ray, 0.0, 10.0);
+
+                // 1.0 - x * x - y * y
+                let a_sqred = 4.0_f32.powi(2);
+                let b_sqred = 0.5_f32.powi(2);
+                if (x * x) / a_sqred + (y * y) / b_sqred > 1.0 {
+                    // miss case
+                    assert!(interaction_result.is_none(), "Expected failure from x:{}, y:{}", x, y);
+                } else {
+                    let interaction = interaction_result.expect(&format!("Expected success from x:{}, y:{}", x, y));
+
+                    let z_squared = (1.0 - x * x / a_sqred - y * y / b_sqred).max(0.0);
+                    let z_point = z_squared.sqrt();
+
+                    let expected = Point3f {x: x, y: y, z: z_point};
+                    assert!(
+                        approx_eq!(Point3f,  interaction.p, expected, ulps = 4),
+                        "Point comparison failed - returned {:?} expected {:?} (z squared: {})",
+                        interaction.p,
+                        expected,
+                        z_squared,
+                    );
+
+                    let expected_normal = Normal3f {x: x / a_sqred, y: y / b_sqred, z: z_point};
+                    assert!(
+                        approx_eq!(
+                            Normal3f,
+                            interaction.normal.unit_vector(),
+                            expected_normal.unit_vector()
+                        ),
+                        "Normal comparison failed - returned {:?} expected {:?}",
+                        interaction.normal.unit_vector(),
+                        expected_normal.unit_vector(),
+                    );
+                }
+            }
+        }
+    }
+
+    // #[test]
+    // fn test_moved_unit_sphere_normals() {
+    //     unimplemented!();
+    // }
+
+    // #[test]
+    // fn test_moved_regularly_scaled_sphere_normals() {
+    //     unimplemented!();
+    // }
+
+    // #[test]
+    // fn test_moved_irregularly_scaled_sphere_normals() {
+    //     unimplemented!();
+    // }
 }

@@ -14,6 +14,8 @@ use std::cmp::PartialEq;
 use std::clone::Clone;
 use serde::{Deserialize, Serialize};
 
+use float_cmp::{ApproxEq, F32Margin};
+
 use crate::vector::Vec3;
 use crate::core::Vector3f;
 
@@ -286,4 +288,15 @@ impl PartialEq for Normal3f {
         self.y == rhs.y &&
         self.z == rhs.z
     }
+}
+
+impl ApproxEq for Normal3f {
+    type Margin = F32Margin;
+
+    fn approx_eq<M: Into<Self::Margin>>(self, other: Self, margin: M) -> bool {
+        let margin = margin.into();
+        self.x.approx_eq(other.x, margin)
+            && self.y.approx_eq(other.y, margin)
+            && self.z.approx_eq(other.z, margin)
+   }
 }

@@ -51,7 +51,8 @@ impl ShapeTrait for Sphere {
             return Some(Interaction {
                 t: temp,
                 p: object_to_world * interaction_point,
-                normal: object_to_world * Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}) / self.radius,
+                // normal: object_to_world * Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}) / self.radius,
+                normal: world_to_object.transpose() * Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}) / self.radius,
             });
         }
 
@@ -61,7 +62,8 @@ impl ShapeTrait for Sphere {
             return Some(Interaction {
                 t: temp2,
                 p: object_to_world * interaction_point,
-                normal: object_to_world * Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}) / self.radius,
+                // normal: object_to_world * Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}) / self.radius,
+                normal: world_to_object.transpose() * Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}) / self.radius,
             });
         }
 
