@@ -17,15 +17,26 @@ pub struct Primative {
 impl Primative {
     pub fn collide(self, ray: Ray, t_min: f32, t_max: f32) -> Option<Interaction> {
         let transform = self.transform.generate_transform(ray.time);
+
+        let object_to_world = transform.m;
+        let world_to_object = transform.m_inv;
+
         let interaction_result = self.shape.collide(
-            ray,
-            transform.m,
-            transform.m_inv,
+            world_to_object * ray,
             t_min,
             t_max,
         );
 
-        interaction_result
+        match interaction_result {
+            Some(interaction) => {
+                Some(Interaction {
+                    t: interaction.t,
+                    p: object_to_world * interaction.p,
+                    normal: (world_to_object.transpose() * interaction.normal).unit_vector(),
+                })
+            },
+            None => None,
+        }
     }
 
     pub fn scatter(self, ray: &Ray, interaction: &Interaction) -> ScatterResult {

@@ -20,14 +20,11 @@ impl ShapeTrait for Sphere {
     fn collide(
         &self,
         ray: Ray,
-        object_to_world: Matrix4x4f,
-        world_to_object: Matrix4x4f,
         t_min: f32,
         t_max: f32,
     ) -> Option<Interaction> {
-        let t_ray = world_to_object * ray;
+        let t_ray = ray;
         let ray_o = t_ray.origin();
-        // let ray_d = t_ray.direction().unit_vector();
         let ray_d = t_ray.direction();
 
         // let direction_dot = ray.direction();
@@ -50,9 +47,8 @@ impl ShapeTrait for Sphere {
             let interaction_point =  t_ray.point_at_parameter(temp);
             return Some(Interaction {
                 t: temp,
-                p: object_to_world * interaction_point,
-                // normal: object_to_world * Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}) / self.radius,
-                normal: world_to_object.transpose() * Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}) / self.radius,
+                p: interaction_point,
+                normal: Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}),
             });
         }
 
@@ -61,9 +57,8 @@ impl ShapeTrait for Sphere {
             let interaction_point =  t_ray.point_at_parameter(temp2);
             return Some(Interaction {
                 t: temp2,
-                p: object_to_world * interaction_point,
-                // normal: object_to_world * Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}) / self.radius,
-                normal: world_to_object.transpose() * Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}) / self.radius,
+                p: interaction_point,
+                normal: Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}),
             });
         }
 

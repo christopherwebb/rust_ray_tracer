@@ -29,8 +29,6 @@ pub trait ShapeTrait {
     fn collide(
         &self,
         ray: Ray,
-        object_to_world: Matrix4x4f,
-        world_to_object: Matrix4x4f,
         t_min: f32,
         t_max: f32,
     ) -> Option<Interaction>;

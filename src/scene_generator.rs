@@ -62,7 +62,7 @@ impl TransformTrait for SRTTransform {
 pub fn three_sphere(time_0: f32, time_1: f32) -> Scene {
     let metal_material = Arc::new(Metal {
         albedo: Colour {r: 0.8, g: 0.8, b: 0.8},
-        fuzz: 0.3,
+        fuzz: 0.0,
     });
 
     Scene {
