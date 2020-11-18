@@ -11,19 +11,20 @@ use clap::{Arg, App};
 use indicatif::{HumanDuration, ProgressBar, ProgressStyle};
 use console::style;
 
+mod aabb;
+mod bvh_tree;
 mod camera;
-mod material;
+mod core;
 mod material2;
+mod material;
+mod primative;
 mod ray;
 mod render;
+mod scene2;
 mod scene;
+mod scene_generator;
 mod shapes;
 mod vector;
-mod core;
-mod primative;
-mod scene2;
-
-mod scene_generator;
 
 
 use crate::core::{Point3f, Normal3f, Colour};

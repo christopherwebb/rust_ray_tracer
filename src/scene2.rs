@@ -1,8 +1,10 @@
+use crate::aabb::AABB;
 use crate::ray::Ray;
 use crate::shapes::base::{Interaction, ShapeTrait};
 use crate::primative::Primative;
 use crate::core::{Point3f, Normal3f, Colour};
 use crate::camera::Camera;
+use crate::bvh_tree::BVHTree;
 
 
 const T_MAX: f32 = 1000000.0;
@@ -41,11 +43,42 @@ impl Scene {
         //     }
         // }
 
-        let ray = ray.clone();
-
         return (&self.primatives).iter().enumerate().fold(None, |previous, (index, primative)| {
             // let index = enum_prim_tuple[0];
             // let primative = enum_prim_tuple[1];
+            let prima_clone = primative.clone();
+
+            let interaction_option = prima_clone.collide(ray, 0.0, t_max);
+            match interaction_option {
+                Some(interaction) => {
+                    t_max = interaction.t;
+                    Some(PrimativeInteraction{
+                        primative: index,
+                        interaction,
+                    })
+                },
+                None => previous,
+            }
+        });
+    }
+
+    // fn find_boundingboxes(&self, time_0: f32, time_1: f32) -> Option<AABB> {
+    //     (&self.primatives).iter().fold(|previous, primative| {
+
+    // }
+}
+
+pub struct SceneAABBDivision {
+    pub primatives: Vec<Primative>,
+    pub camera: Camera,
+    pub bvh_trees: Vec<BVHTree>,
+}
+
+impl SceneAABBDivision {
+    fn find_interaction(&self, ray: &Ray) -> Option<PrimativeInteraction> {
+        let mut t_max = T_MAX;
+
+        return (&self.primatives).iter().enumerate().fold(None, |previous, (index, primative)| {
             let prima_clone = primative.clone();
 
             let interaction_option = prima_clone.collide(ray, 0.0, t_max);

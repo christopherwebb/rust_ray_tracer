@@ -7,6 +7,7 @@ use crate::core::{
     Matrix4x4f,
     Normal3f,
 };
+use crate::aabb::AABB;
 
 pub trait Hitable {
     fn hit(
@@ -28,10 +29,16 @@ pub struct Interaction {
 pub trait ShapeTrait {
     fn collide(
         &self,
-        ray: Ray,
+        ray: &Ray,
         t_min: f32,
         t_max: f32,
     ) -> Option<Interaction>;
+
+    fn bounding_box(
+        &self,
+        time_0: f32,
+        time_1: f32,
+    ) -> Option<AABB>;
 }
 
 pub fn solve_quadratic(a: f32, b: f32, c: f32) -> (bool, f32, f32) {

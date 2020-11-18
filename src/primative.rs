@@ -1,9 +1,10 @@
 // use std::rc::Rc;
 use std::sync::Arc;
 
+use crate::aabb::AABB;
 use crate::ray::Ray;
 use crate::shapes::base::{Interaction, ShapeTrait};
-use crate::core::Transform;
+use crate::core::{Point3f, Transform};
 use crate::material2::{MaterialTrait, ScatterResult};
 
 
@@ -15,14 +16,14 @@ pub struct Primative {
 }
 
 impl Primative {
-    pub fn collide(self, ray: Ray, t_min: f32, t_max: f32) -> Option<Interaction> {
+    pub fn collide(self, ray: &Ray, t_min: f32, t_max: f32) -> Option<Interaction> {
         let transform = self.transform.generate_transform(ray.time);
 
         let object_to_world = transform.m;
         let world_to_object = transform.m_inv;
 
         let interaction_result = self.shape.collide(
-            world_to_object * ray,
+            &(world_to_object * ray),
             t_min,
             t_max,
         );
@@ -36,6 +37,36 @@ impl Primative {
                 })
             },
             None => None,
+        }
+    }
+
+    pub fn bounding_box(
+        &self,
+        time_0: f32,
+        time_1: f32,
+    ) -> Option<AABB> {
+        let transform = self.transform.generate_transform(time_0);
+        let object_to_world = transform.m;
+
+        match self.shape.bounding_box(time_0, time_1) {
+            Some(bounding) => {
+                let transformed_min = object_to_world * bounding.minimum;
+                let transformed_max = object_to_world * bounding.maximum;
+
+                Some(AABB {
+                    minimum: Point3f {
+                        x: transformed_min.x.min(transformed_max.x),
+                        y: transformed_min.y.min(transformed_max.y),
+                        z: transformed_min.z.min(transformed_max.z),
+                    },
+                    maximum: Point3f {
+                        x: transformed_min.x.max(transformed_max.x),
+                        y: transformed_min.y.max(transformed_max.y),
+                        z: transformed_min.z.max(transformed_max.z),
+                    },
+                })
+            },
+            None => None
         }
     }
 

@@ -33,3 +33,15 @@ impl Mul<Ray> for Matrix4x4f {
         }
     }
 }
+
+impl Mul<&Ray> for Matrix4x4f {
+    type Output = Ray;
+
+    fn mul(self, _rhs: &Ray) -> Ray {
+        Ray {
+            a: self * _rhs.a,
+            b: self * _rhs.b,
+            time: _rhs.time,
+        }
+    }
+}

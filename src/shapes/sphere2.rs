@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use crate::aabb::AABB;
 use crate::core::{
     Normal3f,
     Point3f,
@@ -19,7 +20,7 @@ pub struct Sphere {
 impl ShapeTrait for Sphere {
     fn collide(
         &self,
-        ray: Ray,
+        ray: &Ray,
         t_min: f32,
         t_max: f32,
     ) -> Option<Interaction> {
@@ -63,6 +64,25 @@ impl ShapeTrait for Sphere {
         }
 
         None
+    }
+
+    fn bounding_box(
+        &self,
+        time_0: f32,
+        time_1: f32,
+    ) -> Option<AABB> {
+        Some(AABB {
+            minimum: Point3f {
+                x: -self.radius,
+                y: -self.radius,
+                z: -self.radius,
+            },
+            maximum: Point3f {
+                x:  self.radius,
+                y:  self.radius,
+                z:  self.radius,
+            },
+        })
     }
 }
 
