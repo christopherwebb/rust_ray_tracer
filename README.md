@@ -8,16 +8,23 @@ A rust based implementation of Peter Shirley's [Ray Tracing In One Weekend](http
 To generate the final image of Ray Tracing In One Weekend:
 
 ```
-Command goes here
+cargo run --example final_weekend | cargo run --bin rust_ray_tracing -w 2000 -h 1000 -s 100 | cargo run --bin rust_ray_assemble -w 2000 -h 1000 > final_image.ppm
 ```
 
-The above will generate an image, ``, with the final result.
+The above will generate an image, `final_image.ppm`, with the final result.
 
-## What all the commands actually mean / do
+## But what do all those commands actually mean / do
+
+### The example generator
+
+`cargo run --example final_weekend` generates the JSON scene. This command can, of course, be outputed into a json file, and that file fed into the ray tracer.
 
 ### rust_ray_tracer
 
-Takes in as input the scene json, and outputs json lines (one line per ray result).
+The `cargo run --bin rust_ray_tracing -w 2000 -h 1000 -s 100` command runs the ray tracer to generate a 2000x1000 image, with 100 samples per pixel.
+
+The actual ray tracer. Takes in as input the scene json, and outputs json lines (one line per ray result). Takes an awful long time, and uses stderr to render a progress bar.
+
 ```
 USAGE:
     rust_ray_tracing [OPTIONS]
@@ -35,6 +42,8 @@ OPTIONS:
 
 ### rust_ray_assemble
 
+The `cargo run --bin rust_ray_assemble -w 2000 -h 1000` command takes in the rays produced by the ray tracer, and outputs a 2000x1000 image in PPM format.
+
 Receives the json line results from the tracer, and averages the results out to produce the final PPM format image. Waits until the end of the input (EOF) before it begins the averaging process.
 
 ```
@@ -50,7 +59,7 @@ OPTIONS:
     -w, --width <INT>     Width of image [default: 800]
 ```
 
-At this point, make sure that the height and width given both to the 
+At this point, make sure that the height and width given to the tracer and assembler are the same.
 
 ## Exploring the source code
 
