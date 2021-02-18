@@ -375,12 +375,14 @@ fn main() {
                 handle.join().unwrap();
             }
 
+            let mut received_count = 0;
             for received in rx.iter() {
-                pb.inc(1);
+                received_count += 1;
                 ray_results.push(received);
                 let serialized = serde_json::to_string(&received).unwrap();
                 println!("{}", serialized);
             }
+            pb.inc(received_count);
         }
     }
 
