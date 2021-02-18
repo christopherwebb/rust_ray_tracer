@@ -8,7 +8,10 @@ A rust based implementation of Peter Shirley's [Ray Tracing In One Weekend](http
 To generate the final image of Ray Tracing In One Weekend:
 
 ```
-cargo run --example final_weekend | cargo run --bin rust_ray_tracing -w 2000 -h 1000 -s 100 | cargo run --bin rust_ray_assemble -w 2000 -h 1000 > final_image.ppm
+cargo run --example final_weekend 2>/dev/null \
+ | cargo run --bin rust_ray_tracing -- -w 2000 -h 1000 -s 100 \
+ | cargo run --bin rust_ray_assemble -- -w 2000 -h 1000 \
+ > final_image.ppm
 ```
 
 The above will generate an image, `final_image.ppm`, with the final result.
