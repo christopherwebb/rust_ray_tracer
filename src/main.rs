@@ -25,6 +25,7 @@ mod scene;
 mod scene_generator;
 mod shapes;
 mod vector;
+mod textures;
 
 
 use crate::core::{Point3f, Normal3f, Colour};

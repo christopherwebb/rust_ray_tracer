@@ -20,6 +20,7 @@ use crate::{camera::Camera, core::{
 use crate::material2::{
     // MaterialTrait,
     Metal,
+    Lambertian,
     // NormalMaterial,
 };
 
@@ -65,6 +66,8 @@ pub fn three_sphere(time_0: f32, time_1: f32) -> Scene {
         fuzz: 0.0,
     });
 
+    let solid_lamb = Arc::new(Lambertian::colour(Colour {r: 0.8, g: 0.1, b: 0.1}));
+
     Scene {
         primatives: vec![
             Primative {
@@ -101,7 +104,7 @@ pub fn three_sphere(time_0: f32, time_1: f32) -> Scene {
                     0.0,
                     Vector3f {x: 0.0, y: 1.0, z: 0.0},
                 )),
-                material: metal_material.clone(),
+                material: solid_lamb.clone(),
             },
         ],
         camera: Camera::create(
@@ -115,6 +118,7 @@ pub fn three_sphere(time_0: f32, time_1: f32) -> Scene {
             time_0,
             time_1,
         ),
+        // bvh_trees: vec![],
     }
 }
 

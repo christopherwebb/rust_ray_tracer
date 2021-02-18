@@ -33,6 +33,8 @@ impl Primative {
                 Some(Interaction {
                     t: interaction.t,
                     p: object_to_world * interaction.p,
+                    u: interaction.u,
+                    v: interaction.v,
                     normal: (world_to_object.transpose() * interaction.normal).unit_vector(),
                 })
             },

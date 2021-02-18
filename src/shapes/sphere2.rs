@@ -1,3 +1,4 @@
+use std::f32;
 use serde::{Deserialize, Serialize};
 
 use crate::aabb::AABB;
@@ -46,9 +47,12 @@ impl ShapeTrait for Sphere {
         let temp: f32 = (-half_b - root) / a;
         if temp > t_min && temp < t_max {
             let interaction_point =  t_ray.point_at_parameter(temp);
+            let (u, v) = Sphere::get_sphere_uv(interaction_point);
             return Some(Interaction {
                 t: temp,
                 p: interaction_point,
+                u: u,
+                v: v,
                 normal: Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}),
             });
         }
@@ -56,9 +60,12 @@ impl ShapeTrait for Sphere {
         let temp2: f32 = (-half_b + root) / a;
         if temp2 > t_min && temp2 < t_max {
             let interaction_point =  t_ray.point_at_parameter(temp2);
+            let (u, v) = Sphere::get_sphere_uv(interaction_point);
             return Some(Interaction {
                 t: temp2,
                 p: interaction_point,
+                u: u,
+                v: v,
                 normal: Normal3f::from(&interaction_point - Point3f {x: 0.0, y: 0.0, z: 0.0}),
             });
         }
@@ -83,6 +90,18 @@ impl ShapeTrait for Sphere {
                 z:  self.radius,
             },
         })
+    }
+}
+
+impl Sphere {
+    fn get_sphere_uv(p: Point3f) -> (f32, f32) {
+        let theta = (-p.y).acos();
+        let phi = (-p.z).atan2(p.x) + f32::consts::PI;
+
+        let u = phi / (2.0 * f32::consts::PI);
+        let v = theta / f32::consts::PI;
+
+        (u, v)
     }
 }
 

@@ -21,9 +21,11 @@ pub trait Hitable {
 
 #[derive(Copy, Clone)]
 pub struct Interaction {
-    pub t : f32,
-    pub p : Point3f,
-    pub normal : Normal3f,
+    pub t: f32,
+    pub p: Point3f,
+    pub normal: Normal3f,
+    pub u: f32,
+    pub v: f32,
 }
 
 pub trait ShapeTrait {

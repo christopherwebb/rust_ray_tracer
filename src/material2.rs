@@ -2,6 +2,8 @@ use rand::Rng;
 
 use serde::{Deserialize, Serialize};
 
+use std::sync::Arc;
+
 use crate::core::{
     Point3f,
     Vector3f,
@@ -11,6 +13,9 @@ use crate::core::{
     reflect,
     refract,
 };
+
+use crate::textures::base::Texture;
+use crate::textures::solid_colour::SolidColour;
 
 use crate::ray::Ray;
 
@@ -30,10 +35,14 @@ pub trait MaterialTrait {
     fn scatter(&self, ray_in: &Ray, interaction: &Interaction) -> ScatterResult;
 }
 
+// pub struct Lambertian<'a> {
 pub struct Lambertian {
-    pub albedo: Colour,
+    // pub albedo: Colour,
+    // pub albedo: &'a Texture,
+    pub albedo: Arc<dyn Texture + Send + Sync>,
 }
 
+// impl MaterialTrait for Lambertian<'_> {
 impl MaterialTrait for Lambertian {
     // fn scatter(&self, ray_in: &Ray, hit: &HitRecord) -> ScatterResult {
     fn scatter(&self, ray_in: &Ray, interaction: &Interaction) -> ScatterResult {
@@ -41,12 +50,23 @@ impl MaterialTrait for Lambertian {
 
         ScatterResult {
             hit : true,
-            atten : self.albedo,
+            atten : self.albedo.value(interaction.u, interaction.v, interaction.p),
             ray_out : Ray {
                 a: interaction.p,
                 b: Vector3f::from(target - interaction.p),
                 time: ray_in.time,
             },
+        }
+    }
+}
+
+impl Lambertian {
+    // pub fn colour<'a>(colour: Colour) -> Lambertian<'a> {
+    pub fn colour(colour: Colour) -> Lambertian {
+        Lambertian {
+            albedo: Arc::new(SolidColour {
+                colour: colour
+            })
         }
     }
 }
