@@ -4,7 +4,7 @@ A rust based implementation of Peter Shirley's [Ray Tracing In One Weekend](http
 
 ## How to run the demos:
 
-![Final image of Ray Tracing In One Weekend. Contains three large sphere, surrounded by many smaller spheres. Some spheres are a matt colour, others are clear, while others are reflective](/images/image_030b.png)
+![Final image of Ray Tracing In One Weekend. Contains three large sphere, surrounded by many smaller spheres. Some spheres are a matt colour, others are clear, while others are reflective](/examples_images/final_weekend.png)
 To generate the final image of Ray Tracing In One Weekend:
 
 ```
